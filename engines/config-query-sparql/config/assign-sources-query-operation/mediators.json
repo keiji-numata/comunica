@@ -1,0 +1,9 @@
+{
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/bus-assign-sources-query-operation/^1.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/mediator-race/^2.0.0/components/context.jsonld"
+  ],
+  "@id": "urn:comunica:default:assign-sources-query-operation/mediators#main",
+  "@type": "MediatorRace",
+  "bus": { "@id": "ActorAssignSourcesQueryOperation:_default_bus" }
+}

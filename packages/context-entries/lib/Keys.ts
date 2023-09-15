@@ -8,10 +8,12 @@ import type { Bindings,
   IDataSource,
   IDataDestination,
   MetadataBindings, FunctionArgumentsCache,
-  IAggregatedStore } from '@comunica/types';
+  IAggregatedStore, IQuerySource,
+  QuerySourceUnidentified } from '@comunica/types';
 import type * as RDF from '@rdfjs/types';
 import type { IDocumentLoader } from 'jsonld-context-parser';
 import type { Algebra } from 'sparqlalgebrajs';
+import { IQuerySourceWrapper } from '@comunica/types';
 
 /**
  * When adding entries to this file, also add a shortcut for them in the contextKeyShortcuts TSDoc comment in
@@ -210,6 +212,14 @@ export const KeysQueryOperation = {
    * If the default graph should also contain the union of all named graphs.
    */
   unionDefaultGraph: new ActionContextKey<boolean>('@comunica/bus-query-operation:unionDefaultGraph'),
+  /**
+   * The sources to query over.
+   */
+  querySources: new ActionContextKey<IQuerySourceWrapper[]>('@comunica/bus-query-operation:querySources'),
+  /**
+   * The unidentified sources to query over.
+   */
+  querySourcesUnidentified: new ActionContextKey<QuerySourceUnidentified[]>('@comunica/bus-query-operation:querySourcesUnidentified'),
 };
 
 export const KeysRdfParseJsonLd = {
@@ -264,4 +274,11 @@ export const KeysRdfUpdateQuads = {
    * A data destination.
    */
   destination: new ActionContextKey<IDataDestination>('@comunica/bus-rdf-update-quads:destination'),
+};
+
+export const KeysRdfJoin = {
+  /**
+   * The last physical join actor that was executed.
+   */
+  lastPhysicalJoin: new ActionContextKey<string>('@comunica/bus-rdf-join:lastPhysicalJoin'),
 };

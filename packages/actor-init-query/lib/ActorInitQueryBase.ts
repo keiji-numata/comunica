@@ -1,3 +1,4 @@
+import type { MediatorAssignSourcesQueryOperation } from '@comunica/bus-assign-sources-query-operation';
 import type { MediatorContextPreprocess } from '@comunica/bus-context-preprocess';
 import type { MediatorHttpInvalidate } from '@comunica/bus-http-invalidate';
 import type { IActionInit, IActorInitArgs, IActorOutputInit } from '@comunica/bus-init';
@@ -23,6 +24,7 @@ export class ActorInitQueryBase<QueryContext extends IQueryContextCommon = IQuer
   public readonly mediatorQueryResultSerializeMediaTypeCombiner: MediatorQueryResultSerializeMediaTypes;
   public readonly mediatorQueryResultSerializeMediaTypeFormatCombiner: MediatorQueryResultSerializeMediaTypeFormats;
   public readonly mediatorContextPreprocess: MediatorContextPreprocess;
+  public readonly mediatorAssignSourcesQueryOperation: MediatorAssignSourcesQueryOperation;
   public readonly mediatorHttpInvalidate: MediatorHttpInvalidate;
 
   public readonly logger: Logger;
@@ -94,6 +96,10 @@ export interface IActorInitQueryBaseArgs<QueryContext extends IQueryContextCommo
    */
   mediatorContextPreprocess: MediatorContextPreprocess;
   /**
+   * The source assignment mediator.
+   */
+  mediatorAssignSourcesQueryOperation: MediatorAssignSourcesQueryOperation;
+  /**
    * The HTTP cache invalidation mediator
    */
   mediatorHttpInvalidate: MediatorHttpInvalidate;
@@ -124,8 +130,7 @@ export interface IActorInitQueryBaseArgs<QueryContext extends IQueryContextCommo
    * A record of context shortcuts to full context keys (as defined in @comunica/context-entries).
    * @range {json}
    * @default {{
-   *   "source": "@comunica/bus-rdf-resolve-quad-pattern:source",
-   *   "sources": "@comunica/bus-rdf-resolve-quad-pattern:sources",
+   *   "sources": "@comunica/bus-query-operation:querySourcesUnidentified",
    *   "destination": "@comunica/bus-rdf-update-quads:destination",
    *   "initialBindings": "@comunica/actor-init-query:initialBindings",
    *   "queryFormat": "@comunica/actor-init-query:queryFormat",

@@ -145,7 +145,6 @@ implements IQueryEngine<QueryContext, QueryStringContextInner, QueryAlgebraConte
     actionContext = actionContext
       .setDefault(KeysInitQuery.queryTimestamp, new Date())
       .setDefault(KeysRdfResolveQuadPattern.sourceIds, new Map())
-      // Set the default logger if none is provided
       .setDefault(KeysCore.log, this.actorInitQuery.logger)
       .setDefault(KeysInitQuery.functionArgumentsCache, this.defaultFunctionArgumentsCache)
       .setDefault(KeysRdfResolveQuadPattern.hypermediaSourcesAggregatedStores, new Map());
@@ -190,6 +189,10 @@ implements IQueryEngine<QueryContext, QueryStringContextInner, QueryAlgebraConte
       actionContext = actionContext.delete(KeysInitQuery.queryString);
     }
 
+    // Assign sources to operations
+    ({ operation } = await this.actorInitQuery.mediatorAssignSourcesQueryOperation
+      .mediate({ context: actionContext, operation }));
+
     // Optimize the query operation
     const mediatorResult = await this.actorInitQuery.mediatorOptimizeQueryOperation
       .mediate({ context: actionContext, operation });
@@ -201,7 +204,7 @@ implements IQueryEngine<QueryContext, QueryStringContextInner, QueryAlgebraConte
       return {
         explain: true,
         type: explainMode,
-        data: operation,
+        data: operation, // TODO: prune metadata
       };
     }
 

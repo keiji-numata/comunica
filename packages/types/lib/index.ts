@@ -11,4 +11,5 @@ export * from './IProxyHandler';
 export * from './IQueryContext';
 export * from './IQueryEngine';
 export * from './IQueryOperationResult';
+export * from './IQuerySource';
 export * from './Logger';

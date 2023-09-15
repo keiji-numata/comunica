@@ -3,6 +3,7 @@ import type { EventEmitter } from 'events';
 import type * as RDF from '@rdfjs/types';
 import type { AsyncIterator } from 'asynciterator';
 import type { MetadataQuads } from './IMetadata';
+import { MetadataBindings } from './IMetadata';
 
 /**
  * A StreamingStore allows data lookup and insertion to happen in parallel.
@@ -38,7 +39,7 @@ export interface IAggregatedStore<Q extends RDF.BaseQuad = RDF.Quad, S extends R
    * @param metadata The metadata object.
    * @param updateState If the metadata state of derived iterators should be immediately updated.
    */
-  setBaseMetadata: (metadata: MetadataQuads, updateStates: boolean) => void;
+  setBaseMetadata: (metadata: MetadataBindings, updateStates: boolean) => void;
 
   match: (
     subject?: RDF.Term | null,

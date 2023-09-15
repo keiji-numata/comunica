@@ -208,6 +208,7 @@ export class ActorQueryOperationQuadpattern extends ActorQueryOperationTyped<Alg
     // Modify pattern with default graph when using union default graph semantics
     let patternInner = pattern;
     const unionDefaultGraph = this.unionDefaultGraph || context.get(KeysQueryOperation.unionDefaultGraph);
+    // TODO: also set forcefully in context?
     if (pattern.graph.termType === 'DefaultGraph' && unionDefaultGraph) {
       patternInner = AF.createPattern(
         pattern.subject,
