@@ -1,6 +1,6 @@
 import { materializeOperation } from '@comunica/bus-query-operation';
 import type { IActionSparqlSerialize, IActorQueryResultSerializeOutput } from '@comunica/bus-query-result-serialize';
-import { KeysCore, KeysInitQuery, KeysRdfResolveQuadPattern } from '@comunica/context-entries';
+import { KeysCore, KeysInitQuery, KeysQuerySourceIdentify } from '@comunica/context-entries';
 import { ActionContext } from '@comunica/core';
 import type {
   IActionContext, IPhysicalQueryPlanLogger,
@@ -144,11 +144,9 @@ implements IQueryEngine<QueryContext, QueryStringContextInner, QueryAlgebraConte
 
     actionContext = actionContext
       .setDefault(KeysInitQuery.queryTimestamp, new Date())
-      .setDefault(KeysRdfResolveQuadPattern.sourceIds, new Map())
-      // Set the default logger if none is provided
+      .setDefault(KeysQuerySourceIdentify.sourceIds, new Map())
       .setDefault(KeysCore.log, this.actorInitQuery.logger)
-      .setDefault(KeysInitQuery.functionArgumentsCache, this.defaultFunctionArgumentsCache)
-      .setDefault(KeysRdfResolveQuadPattern.hypermediaSourcesAggregatedStores, new Map());
+      .setDefault(KeysInitQuery.functionArgumentsCache, this.defaultFunctionArgumentsCache);
 
     // Pre-processing the context
     actionContext = (await this.actorInitQuery.mediatorContextPreprocess.mediate({ context: actionContext })).context;

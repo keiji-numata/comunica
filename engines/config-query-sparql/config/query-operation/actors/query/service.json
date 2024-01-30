@@ -11,6 +11,7 @@
       "@id": "urn:comunica:default:query-operation/actors#service",
       "@type": "ActorQueryOperationService",
       "mediatorQueryOperation": { "@id": "urn:comunica:default:query-operation/mediators#main" },
+      "mediatorQuerySourceIdentify": { "@id": "urn:comunica:default:query-source-identify/mediators#main" },
       "forceSparqlEndpoint": false
     }
   ]

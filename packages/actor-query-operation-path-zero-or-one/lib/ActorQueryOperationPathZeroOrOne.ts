@@ -24,6 +24,7 @@ export class ActorQueryOperationPathZeroOrOne extends ActorAbstractPath {
     context: IActionContext,
   ): Promise<IQueryOperationResult> {
     const predicate = <Algebra.ZeroOrOnePath> operation.predicate;
+    const sources = this.getPathSources(predicate);
 
     const extra: Bindings[] = [];
 
@@ -68,8 +69,8 @@ export class ActorQueryOperationPathZeroOrOne extends ActorAbstractPath {
         await this.mediatorQueryOperation.mediate({
           context,
           operation: ActorAbstractPath.FACTORY.createFilter(
-            ActorAbstractPath.FACTORY
-              .createPattern(operation.subject, varP, operation.object, operation.graph),
+            this.assignPatternSources(ActorAbstractPath.FACTORY
+              .createPattern(operation.subject, varP, operation.object, operation.graph), sources),
             ActorAbstractPath.FACTORY.createOperatorExpression('=', [
               ActorAbstractPath.FACTORY.createTermExpression(operation.subject),
               ActorAbstractPath.FACTORY.createTermExpression(operation.object),

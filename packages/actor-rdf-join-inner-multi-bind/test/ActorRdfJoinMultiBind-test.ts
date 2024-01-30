@@ -1,6 +1,7 @@
 import { BindingsFactory } from '@comunica/bindings-factory';
 import type { IActionQueryOperation } from '@comunica/bus-query-operation';
 import type { IActionRdfJoin } from '@comunica/bus-rdf-join';
+import { ActorRdfJoin } from '@comunica/bus-rdf-join';
 import type { IActionRdfJoinEntriesSort, MediatorRdfJoinEntriesSort } from '@comunica/bus-rdf-join-entries-sort';
 import type { IActionRdfJoinSelectivity, IActorRdfJoinSelectivityOutput } from '@comunica/bus-rdf-join-selectivity';
 import { KeysQueryOperation } from '@comunica/context-entries';
@@ -136,7 +137,7 @@ describe('ActorRdfJoinMultiBind', () => {
           iterations: 1.280_000_000_000_000_2,
           persistedItems: 0,
           blockingItems: 0,
-          requestTime: 0.440_96,
+          requestTime: 0.912_000_000_000_000_1,
         });
       });
 
@@ -190,7 +191,7 @@ describe('ActorRdfJoinMultiBind', () => {
           iterations: 1.280_000_000_000_000_2,
           persistedItems: 0,
           blockingItems: 0,
-          requestTime: 0.440_96,
+          requestTime: 0.912_000_000_000_000_1,
         });
       });
 
@@ -239,7 +240,7 @@ describe('ActorRdfJoinMultiBind', () => {
               variables: [ DF.variable('a') ],
             },
           ],
-        )).rejects.toThrowError('Actor actor can not bind on Extend, Group, and Filter operations');
+        )).rejects.toThrowError('Actor actor can not bind on Extend and Group operations');
       });
 
       it('should reject on a right stream of type group', async() => {
@@ -276,44 +277,7 @@ describe('ActorRdfJoinMultiBind', () => {
               variables: [ DF.variable('a') ],
             },
           ],
-        )).rejects.toThrowError('Actor actor can not bind on Extend, Group, and Filter operations');
-      });
-
-      it('should reject on a right stream of type filter', async() => {
-        await expect(actor.getJoinCoefficients(
-          {
-            type: 'inner',
-            entries: [
-              {
-                output: <any> {},
-                operation: <any> { type: Algebra.types.FILTER },
-              },
-              {
-                output: <any> {},
-                operation: <any> {},
-              },
-            ],
-            context: new ActionContext(),
-          },
-          [
-            {
-              state: new MetadataValidationState(),
-              cardinality: { type: 'estimate', value: 3 },
-              pageSize: 100,
-              requestTime: 10,
-              canContainUndefs: false,
-              variables: [ DF.variable('a') ],
-            },
-            {
-              state: new MetadataValidationState(),
-              cardinality: { type: 'estimate', value: 2 },
-              pageSize: 100,
-              requestTime: 20,
-              canContainUndefs: false,
-              variables: [ DF.variable('a') ],
-            },
-          ],
-        )).rejects.toThrowError('Actor actor can not bind on Extend, Group, and Filter operations');
+        )).rejects.toThrowError('Actor actor can not bind on Extend and Group operations');
       });
 
       it('should reject on a right stream containing group', async() => {
@@ -350,7 +314,7 @@ describe('ActorRdfJoinMultiBind', () => {
               variables: [ DF.variable('a') ],
             },
           ],
-        )).rejects.toThrowError('Actor actor can not bind on Extend, Group, and Filter operations');
+        )).rejects.toThrowError('Actor actor can not bind on Extend and Group operations');
       });
 
       it('should not reject on a left stream of type group', async() => {
@@ -391,8 +355,46 @@ describe('ActorRdfJoinMultiBind', () => {
           iterations: 0.480_000_000_000_000_1,
           persistedItems: 0,
           blockingItems: 0,
-          requestTime: 0.403_840_000_000_000_03,
+          requestTime: 0.448_000_000_000_000_06,
         });
+      });
+
+      it('should reject on a stream containing a modified operation', async() => {
+        await expect(actor.getJoinCoefficients(
+          {
+            type: 'inner',
+            entries: [
+              {
+                output: <any> {},
+                operation: FACTORY.createNop(),
+                operationModified: true,
+              },
+              {
+                output: <any> {},
+                operation: FACTORY.createNop(),
+              },
+            ],
+            context: new ActionContext(),
+          },
+          [
+            {
+              state: new MetadataValidationState(),
+              cardinality: { type: 'estimate', value: 3 },
+              pageSize: 100,
+              requestTime: 10,
+              canContainUndefs: false,
+              variables: [ DF.variable('a') ],
+            },
+            {
+              state: new MetadataValidationState(),
+              cardinality: { type: 'estimate', value: 2 },
+              pageSize: 100,
+              requestTime: 20,
+              canContainUndefs: false,
+              variables: [ DF.variable('a') ],
+            },
+          ],
+        )).rejects.toThrowError('Actor actor can not be used over remaining entries with modified operations');
       });
     });
 
@@ -405,7 +407,8 @@ describe('ActorRdfJoinMultiBind', () => {
 
     describe('sortJoinEntries', () => {
       it('sorts 2 entries', async() => {
-        expect(await actor.sortJoinEntries(
+        expect(await ActorRdfJoin.sortJoinEntries(
+          mediatorJoinEntriesSort,
           [
             {
               output: <any> {},
@@ -454,7 +457,7 @@ describe('ActorRdfJoinMultiBind', () => {
       });
 
       it('sorts 3 entries', async() => {
-        expect(await actor.sortJoinEntries([
+        expect(await ActorRdfJoin.sortJoinEntries(mediatorJoinEntriesSort, [
           {
             output: <any> {},
             operation: <any> {},
@@ -485,8 +488,7 @@ describe('ActorRdfJoinMultiBind', () => {
               variables: [ DF.variable('a') ],
             },
           },
-        ],
-        context)).toEqual([
+        ], context)).toEqual([
           {
             output: <any> {},
             operation: <any> {},
@@ -521,7 +523,8 @@ describe('ActorRdfJoinMultiBind', () => {
       });
 
       it('sorts 3 equal entries', async() => {
-        expect(await actor.sortJoinEntries(
+        expect(await ActorRdfJoin.sortJoinEntries(
+          mediatorJoinEntriesSort,
           [
             {
               output: <any> {},
@@ -590,7 +593,8 @@ describe('ActorRdfJoinMultiBind', () => {
       });
 
       it('does not sort if there is an undef', async() => {
-        expect(await actor.sortJoinEntries(
+        expect(await ActorRdfJoin.sortJoinEntries(
+          mediatorJoinEntriesSort,
           [
             {
               output: <any> {},
@@ -659,7 +663,8 @@ describe('ActorRdfJoinMultiBind', () => {
       });
 
       it('throws if there are no overlapping variables', async() => {
-        await expect(actor.sortJoinEntries(
+        await expect(ActorRdfJoin.sortJoinEntries(
+          mediatorJoinEntriesSort,
           [
             {
               output: <any> {},
@@ -687,7 +692,8 @@ describe('ActorRdfJoinMultiBind', () => {
       });
 
       it('sorts entries without common variables in the back', async() => {
-        expect(await actor.sortJoinEntries(
+        expect(await ActorRdfJoin.sortJoinEntries(
+          mediatorJoinEntriesSort,
           [
             {
               output: <any> {},
@@ -756,7 +762,8 @@ describe('ActorRdfJoinMultiBind', () => {
       });
 
       it('sorts several entries without variables in the back', async() => {
-        expect(await actor.sortJoinEntries(
+        expect(await ActorRdfJoin.sortJoinEntries(
+          mediatorJoinEntriesSort,
           [
             {
               output: <any> {},

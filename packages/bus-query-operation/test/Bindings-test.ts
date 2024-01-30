@@ -183,6 +183,15 @@ describe('materializeOperation', () => {
       .toEqual(factory.createPattern(valueA, termNamedNode, termVariableC, termNamedNode));
   });
 
+  it('should materialize a quad pattern with non-empty bindings and keep metadata', () => {
+    const metadata = { a: 'b' };
+    return expect(materializeOperation(
+      Object.assign(factory.createPattern(termVariableA, termNamedNode, termVariableC, termNamedNode), { metadata }),
+      bindingsA,
+    ))
+      .toEqual(Object.assign(factory.createPattern(valueA, termNamedNode, termVariableC, termNamedNode), { metadata }));
+  });
+
   it('should materialize a BGP with non-empty bindings', () => {
     return expect(materializeOperation(
       factory.createBgp([
@@ -203,6 +212,15 @@ describe('materializeOperation', () => {
       bindingsA,
     ))
       .toEqual(factory.createPath(valueA, <any> null, termVariableC, termNamedNode));
+  });
+
+  it('should materialize a path expression with non-empty bindings and keep metadata', () => {
+    const metadata = { a: 'b' };
+    return expect(materializeOperation(
+      Object.assign(factory.createPath(termVariableA, <any> null, termVariableC, termNamedNode), { metadata }),
+      bindingsA,
+    ))
+      .toEqual(Object.assign(factory.createPath(valueA, <any> null, termVariableC, termNamedNode), { metadata }));
   });
 
   it('should materialize a nested path expression with non-empty bindings', () => {
@@ -629,6 +647,98 @@ describe('materializeOperation', () => {
         ]),
         factory.createOperatorExpression('contains', [
           factory.createTermExpression(valueA),
+          factory.createTermExpression(termVariableB),
+        ]),
+      ));
+  });
+
+  it('should modify a filter expression with BOUND with matching variables', () => {
+    return expect(materializeOperation(
+      factory.createFilter(
+        factory.createBgp([
+          factory.createPattern(termVariableA, termNamedNode, termVariableC, termNamedNode),
+          factory.createPattern(termNamedNode, termVariableB, termVariableC, termNamedNode),
+        ]),
+        factory.createOperatorExpression('contains', [
+          factory.createOperatorExpression('bound', [ factory.createTermExpression(termVariableA) ]),
+          factory.createTermExpression(termVariableB),
+        ]),
+      ),
+      bindingsA,
+    ))
+      .toEqual(factory.createFilter(
+        factory.createBgp([
+          factory.createPattern(valueA, termNamedNode, termVariableC, termNamedNode),
+          factory.createPattern(termNamedNode, termVariableB, termVariableC, termNamedNode),
+        ]),
+        factory.createOperatorExpression('contains', [
+          factory.createTermExpression(DF.literal('true', DF.namedNode('http://www.w3.org/2001/XMLSchema#boolean'))),
+          factory.createTermExpression(termVariableB),
+        ]),
+      ));
+  });
+
+  it('should modify a not filter expression with invalid BOUND argument count', () => {
+    return expect(materializeOperation(
+      factory.createFilter(
+        factory.createBgp([
+          factory.createPattern(termVariableA, termNamedNode, termVariableC, termNamedNode),
+          factory.createPattern(termNamedNode, termVariableB, termVariableC, termNamedNode),
+        ]),
+        factory.createOperatorExpression('contains', [
+          factory.createOperatorExpression('bound', [
+            factory.createTermExpression(termVariableA),
+            factory.createTermExpression(termVariableA),
+          ]),
+          factory.createTermExpression(termVariableB),
+        ]),
+      ),
+      bindingsA,
+    ))
+      .toEqual(factory.createFilter(
+        factory.createBgp([
+          factory.createPattern(valueA, termNamedNode, termVariableC, termNamedNode),
+          factory.createPattern(termNamedNode, termVariableB, termVariableC, termNamedNode),
+        ]),
+        factory.createOperatorExpression('contains', [
+          factory.createOperatorExpression('bound', [
+            factory.createTermExpression(valueA),
+            factory.createTermExpression(valueA),
+          ]),
+          factory.createTermExpression(termVariableB),
+        ]),
+      ));
+  });
+
+  it('should modify a not filter expression with invalid BOUND argument type', () => {
+    return expect(materializeOperation(
+      factory.createFilter(
+        factory.createBgp([
+          factory.createPattern(termVariableA, termNamedNode, termVariableC, termNamedNode),
+          factory.createPattern(termNamedNode, termVariableB, termVariableC, termNamedNode),
+        ]),
+        factory.createOperatorExpression('contains', [
+          factory.createOperatorExpression('bound', [
+            factory.createOperatorExpression('a', [
+              factory.createTermExpression(termVariableA),
+            ]),
+          ]),
+          factory.createTermExpression(termVariableB),
+        ]),
+      ),
+      bindingsA,
+    ))
+      .toEqual(factory.createFilter(
+        factory.createBgp([
+          factory.createPattern(valueA, termNamedNode, termVariableC, termNamedNode),
+          factory.createPattern(termNamedNode, termVariableB, termVariableC, termNamedNode),
+        ]),
+        factory.createOperatorExpression('contains', [
+          factory.createOperatorExpression('bound', [
+            factory.createOperatorExpression('a', [
+              factory.createTermExpression(valueA),
+            ]),
+          ]),
           factory.createTermExpression(termVariableB),
         ]),
       ));

@@ -1,11 +1,11 @@
 import { ProxyHandlerStatic } from '@comunica/actor-http-proxy';
+import { ActorQueryOperation } from '@comunica/bus-query-operation';
 import {
   KeysCore,
   KeysHttp,
   KeysHttpMemento, KeysHttpProxy,
   KeysHttpWayback,
-  KeysInitQuery, KeysQueryOperation,
-  KeysRdfResolveQuadPattern, KeysRdfUpdateQuads,
+  KeysInitQuery, KeysQueryOperation, KeysRdfUpdateQuads,
 } from '@comunica/context-entries';
 import { ActionContext, Bus } from '@comunica/core';
 import { LoggerPretty } from '@comunica/logger-pretty';
@@ -38,8 +38,7 @@ describe('ActorInitQuery', () => {
     initialBindings: '@comunica/actor-init-query:initialBindings',
     log: '@comunica/core:log',
     queryFormat: '@comunica/actor-init-query:queryFormat',
-    source: '@comunica/bus-rdf-resolve-quad-pattern:source',
-    sources: '@comunica/bus-rdf-resolve-quad-pattern:sources',
+    sources: '@comunica/actor-init-query:querySourcesUnidentified',
   };
   const defaultQueryInputFormat = 'sparql';
   const sourceHypermedia = 'http://example.org/';
@@ -118,7 +117,10 @@ describe('ActorInitQuery', () => {
           baseIRI: action.query.includes('BASE') ? 'myBaseIRI' : null,
           operation: factory.createProject(
             factory.createBgp([
-              factory.createPattern(DF.variable('s'), DF.variable('p'), DF.variable('o')),
+              ActorQueryOperation.assignOperationSource(
+                factory.createPattern(DF.variable('s'), DF.variable('p'), DF.variable('o')),
+                <any> { source: { toString: () => 'SRC' }},
+              ),
             ]),
             [
               DF.variable('s'),
@@ -317,7 +319,7 @@ describe('ActorInitQuery', () => {
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
         });
       });
@@ -352,7 +354,7 @@ describe('ActorInitQuery', () => {
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
         });
       });
@@ -382,7 +384,7 @@ describe('ActorInitQuery', () => {
 LIMIT 100
 `, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
         });
       });
@@ -417,7 +419,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ type: 'sparql', value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ type: 'sparql', value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
         });
       });
@@ -432,7 +434,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{
+          [KeysInitQuery.querySourcesUnidentified.name]: [{
             value: sourceHypermedia,
             context: new ActionContext({
               [KeysHttp.auth.name]: 'username:passwd',
@@ -452,7 +454,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{
+          [KeysInitQuery.querySourcesUnidentified.name]: [{
             type: 'sparql',
             value: sourceHypermedia,
             context: new ActionContext({
@@ -473,7 +475,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ type: 'other', value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ type: 'other', value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
         });
       });
@@ -488,7 +490,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }, { value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }, { value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
         });
       });
@@ -503,7 +505,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [
+          [KeysInitQuery.querySourcesUnidentified.name]: [
             { type: 'sparql', value: sourceHypermedia },
             { type: 'sparql', value: sourceHypermedia },
           ],
@@ -537,7 +539,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
           [KeysHttpMemento.datetime.name]: dt,
         });
@@ -553,7 +555,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: new LoggerPretty({ level: 'warn' }),
           [KeysHttpWayback.recoverBrokenLinks.name]: true,
         });
@@ -569,7 +571,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: new LoggerPretty({ level: 'warn' }),
         });
       });
@@ -586,7 +588,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: 'LOGGER',
         });
       });
@@ -602,7 +604,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
           [KeysInitQuery.baseIRI.name]: baseIRI,
         });
@@ -619,7 +621,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
           [KeysHttpProxy.httpProxyHandler.name]: new ProxyHandlerStatic(proxy),
         });
@@ -635,7 +637,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
           [KeysInitQuery.lenient.name]: true,
         });
@@ -651,7 +653,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
           [KeysHttp.httpTimeout.name]: 60,
         });
@@ -667,7 +669,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
           [KeysHttp.httpTimeout.name]: 60,
           [KeysHttp.httpBodyTimeout.name]: true,
@@ -694,7 +696,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
           [KeysHttp.httpRetryCount.name]: 2,
         });
@@ -710,7 +712,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
           [KeysHttp.httpRetryCount.name]: 2,
           [KeysHttp.httpRetryDelay.name]: 500,
@@ -737,7 +739,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
           [KeysHttp.httpRetryCount.name]: 2,
           [KeysHttp.httpRetryOnServerError.name]: true,
@@ -764,7 +766,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
           [KeysQueryOperation.unionDefaultGraph.name]: true,
         });
@@ -780,7 +782,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
           [KeysRdfUpdateQuads.destination.name]: 'http://target.com/',
         });
@@ -810,7 +812,7 @@ LIMIT 100
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          [KeysRdfResolveQuadPattern.sources.name]: [{ value: sourceHypermedia }],
+          [KeysInitQuery.querySourcesUnidentified.name]: [{ value: sourceHypermedia }],
           [KeysCore.log.name]: expect.any(LoggerPretty),
           [KeysInitQuery.cliArgsHandlers.name]: [ cliArgsHandler ],
           bla: 'BLA',
@@ -923,7 +925,7 @@ LIMIT 100
           expect(stdout).toContain(`{"a":"triple"}`);
           expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
             [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-            [KeysRdfResolveQuadPattern.sources.name]: [{ value: 'SOURCE' }],
+            [KeysInitQuery.querySourcesUnidentified.name]: [{ value: 'SOURCE' }],
             [KeysCore.log.name]: expect.any(LoggerPretty),
           });
         });
@@ -938,7 +940,7 @@ LIMIT 100
           expect(stdout).toContain(`{"a":"triple"}`);
           expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
             [KeysInitQuery.queryFormat.name]: { language: 'graphql', version: '1.1' },
-            [KeysRdfResolveQuadPattern.sources.name]: [{ value: 'SOURCE' }],
+            [KeysInitQuery.querySourcesUnidentified.name]: [{ value: 'SOURCE' }],
             [KeysCore.log.name]: expect.any(LoggerPretty),
           });
         });
@@ -1044,7 +1046,10 @@ LIMIT 100
           "termType": "DefaultGraph",
           "value": ""
         },
-        "type": "pattern"
+        "type": "pattern",
+        "metadata": {
+          "scopedSource": "SRC"
+        }
       }
     ]
   },
@@ -1066,7 +1071,7 @@ LIMIT 100
           expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
             [KeysInitQuery.explain.name]: 'parsed',
             [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-            [KeysRdfResolveQuadPattern.sources.name]: [{ value: 'SOURCE' }],
+            [KeysInitQuery.querySourcesUnidentified.name]: [{ value: 'SOURCE' }],
             [KeysCore.log.name]: expect.any(LoggerPretty),
           });
         });
@@ -1102,7 +1107,10 @@ LIMIT 100
           "termType": "DefaultGraph",
           "value": ""
         },
-        "type": "pattern"
+        "type": "pattern",
+        "metadata": {
+          "scopedSource": "SRC"
+        }
       }
     ]
   },
@@ -1124,7 +1132,7 @@ LIMIT 100
           expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
             [KeysInitQuery.explain.name]: 'logical',
             [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-            [KeysRdfResolveQuadPattern.sources.name]: [{ value: 'SOURCE' }],
+            [KeysInitQuery.querySourcesUnidentified.name]: [{ value: 'SOURCE' }],
             [KeysCore.log.name]: expect.any(LoggerPretty),
           });
         });
