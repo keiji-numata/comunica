@@ -42,6 +42,7 @@ describe('ActorQuerySourceIdentifyHypermediaSparql', () => {
         forceHttpGet: false,
         cacheSize: 1_024,
         bindMethod: 'values',
+        countTimeout: 3_000,
       });
     });
 
@@ -79,6 +80,7 @@ describe('ActorQuerySourceIdentifyHypermediaSparql', () => {
           checkUrlSuffix: false,
           forceHttpGet: false,
           bindMethod: 'values',
+          countTimeout: 3_000,
         });
         await expect(actor.test({ url: 'URL/sparql', metadata: {}, quads: <any> null, context })).rejects
           .toThrow(new Error('Actor actor could not detect a SPARQL service description or URL ending on /sparql.'));
@@ -92,6 +94,7 @@ describe('ActorQuerySourceIdentifyHypermediaSparql', () => {
           checkUrlSuffix: false,
           forceHttpGet: false,
           bindMethod: 'values',
+          countTimeout: 3_000,
         });
         await expect(actor
           .test({ url: 'URL/sparql', metadata: {}, quads: <any> null, forceSourceType: 'file', context }))
