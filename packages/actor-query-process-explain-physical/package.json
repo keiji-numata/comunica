@@ -1,14 +1,14 @@
 {
-  "name": "@comunica/actor-init-query",
-  "version": "2.8.0",
-  "description": "A query init actor",
+  "name": "@comunica/actor-query-process-explain-physical",
+  "version": "1.0.0",
+  "description": "A explain-physical query-process actor",
   "lsd:module": true,
   "main": "lib/index.js",
   "typings": "lib/index",
   "repository": {
     "type": "git",
     "url": "https://github.com/comunica/comunica.git",
-    "directory": "packages/actor-init-query"
+    "directory": "packages/actor-query-process-explain-physical"
   },
   "publishConfig": {
     "access": "public"
@@ -17,8 +17,8 @@
   "keywords": [
     "comunica",
     "actor",
-    "init",
-    "query"
+    "query-process",
+    "explain-physical"
   ],
   "license": "MIT",
   "bugs": {
@@ -32,34 +32,17 @@
     "lib/**/*.js.map"
   ],
   "dependencies": {
-    "@comunica/actor-http-proxy": "^2.8.0",
-    "@comunica/bus-http-invalidate": "^2.8.0",
-    "@comunica/bus-init": "^2.8.0",
-    "@comunica/bus-query-result-serialize": "^2.8.0",
+    "@comunica/core": "^2.8.0",
     "@comunica/bus-query-process": "^1.0.0",
     "@comunica/context-entries": "^2.8.0",
-    "@comunica/core": "^2.8.0",
-    "@comunica/logger-pretty": "^2.8.0",
-    "@comunica/runner": "^2.8.0",
     "@comunica/types": "^2.8.0",
     "@rdfjs/types": "*",
-    "@types/yargs": "^17.0.13",
-    "asynciterator": "^3.8.1",
-    "negotiate": "^1.0.1",
-    "process": "^0.11.10",
-    "rdf-quad": "^1.5.0",
-    "streamify-string": "^1.0.1",
-    "yargs": "^17.6.2"
-  },
-  "optionalDependencies": {
-    "process": "^0.11.10"
+    "rdf-string": "^1.6.3",
+    "sparqlalgebrajs": "^4.3.0"
   },
   "scripts": {
     "build": "npm run build:ts && npm run build:components",
     "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",
     "build:components": "componentsjs-generator"
-  },
-  "browser": {
-    "./lib/index.js": "./lib/index-browser.js"
   }
 }

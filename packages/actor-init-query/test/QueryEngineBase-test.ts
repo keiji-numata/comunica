@@ -4,7 +4,6 @@ import { KeysInitQuery } from '@comunica/context-entries';
 import { Bus, ActionContext, ActionContextKey } from '@comunica/core';
 import { MetadataValidationState } from '@comunica/metadata';
 import type {
-  IPhysicalQueryPlanLogger,
   IActionContext, QueryStringContext, IQueryBindingsEnhanced, IQueryQuadsEnhanced,
   QueryType, IQueryOperationResultQuads, IQueryOperationResultBindings,
   IQueryOperationResultBoolean, IQueryOperationResultVoid, IQueryEngine, IQueryContextCommon,
@@ -14,7 +13,6 @@ import arrayifyStream from 'arrayify-stream';
 import { ArrayIterator } from 'asynciterator';
 import { DataFactory } from 'rdf-data-factory';
 import { translate } from 'sparqlalgebrajs';
-import Factory from 'sparqlalgebrajs/lib/factory';
 import { QueryEngineBase } from '../lib';
 import { ActorInitQuery } from '../lib/ActorInitQuery';
 import type { IActorInitQueryBaseArgs } from '../lib/ActorInitQueryBase';
@@ -35,14 +33,12 @@ describe('ActorInitQueryBase', () => {
 describe('QueryEngineBase', () => {
   let bus: any;
   let logger: any;
-  let mediatorContextPreprocess: any;
-  let mediatorOptimizeQueryOperation: any;
-  let mediatorQueryOperation: any;
-  let mediatorSparqlParse: any;
+  let mediatorQueryProcess: any;
   let mediatorSparqlSerialize: any;
   let mediatorHttpInvalidate: any;
   let actorInitQuery: ActorInitQuery;
   let context: IActionContext;
+  let input: any;
 
   const contextKeyShortcuts = {
     initialBindings: '@comunica/actor-init-query:initialBindings',
@@ -55,14 +51,29 @@ describe('QueryEngineBase', () => {
   beforeEach(() => {
     bus = new Bus({ name: 'bus' });
     logger = null;
-    mediatorOptimizeQueryOperation = {
-      mediate: (arg: any) => Promise.resolve(arg),
+    input = new Readable({ objectMode: true });
+    input._read = () => {
+      const triple = { a: 'triple' };
+      input.push(triple);
+      input.push(null);
     };
-    mediatorContextPreprocess = {
-      mediate: (action: any) => Promise.resolve(action),
+    mediatorQueryProcess = <any>{
+      mediate: jest.fn((action: any) => {
+        if (action.context.has(KeysInitQuery.explain)) {
+          return Promise.resolve({
+            result: {
+              explain: 'true',
+              data: 'EXPLAINED',
+            },
+          });
+        }
+        return action.query !== 'INVALID' ?
+          Promise.resolve({
+            result: { type: 'bindings', bindingsStream: input, metadata: () => ({}), context: action.context },
+          }) :
+          Promise.reject(new Error('Invalid query'));
+      }),
     };
-    mediatorQueryOperation = {};
-    mediatorSparqlParse = {};
     mediatorSparqlSerialize = {
       mediate: (arg: any) => Promise.resolve(arg.mediaTypes ?
         { mediaTypes: arg } :
@@ -99,61 +110,18 @@ describe('QueryEngineBase', () => {
 
   describe('An QueryEngineBase instance', () => {
     const queryString = 'SELECT * WHERE { ?s ?p ?o } LIMIT 100';
-    let input: any;
     let actor: ActorInitQuery;
     let queryEngine: IQueryEngine;
 
     beforeEach(() => {
-      jest.resetAllMocks();
-      input = new Readable({ objectMode: true });
-      input._read = () => {
-        const triple = { a: 'triple' };
-        input.push(triple);
-        input.push(null);
-      };
-      const factory = new Factory();
-      mediatorQueryOperation.mediate = jest.fn((action: any) => {
-        if (action.context.has(KeysInitQuery.physicalQueryPlanLogger)) {
-          (<IPhysicalQueryPlanLogger> action.context.get(KeysInitQuery.physicalQueryPlanLogger))
-            .logOperation(
-              'logicalOp',
-              'physicalOp',
-              {},
-              undefined,
-              'actor',
-              {},
-            );
-        }
-        return action.operation !== 'INVALID' ?
-          Promise.resolve({ type: 'bindings', bindingsStream: input }) :
-          Promise.reject(new Error('Invalid query'));
-      });
-      mediatorSparqlParse.mediate = (action: any) => action.query === 'INVALID' ?
-        Promise.resolve({ operation: action.query }) :
-        Promise.resolve({
-          baseIRI: action.query.includes('BASE') ? 'myBaseIRI' : null,
-          operation: factory.createProject(
-            factory.createBgp([
-              factory.createPattern(DF.variable('s'), DF.variable('p'), DF.variable('o')),
-            ]),
-            [
-              DF.variable('s'),
-              DF.variable('p'),
-              DF.variable('o'),
-            ],
-          ),
-        });
       const defaultQueryInputFormat = 'sparql';
       actor = new ActorInitQuery(
         { bus,
           contextKeyShortcuts,
           defaultQueryInputFormat,
           logger,
-          mediatorContextPreprocess,
           mediatorHttpInvalidate,
-          mediatorOptimizeQueryOperation,
-          mediatorQueryOperation,
-          mediatorQueryParse: mediatorSparqlParse,
+          mediatorQueryProcess,
           mediatorQueryResultSerialize: mediatorSparqlSerialize,
           mediatorQueryResultSerializeMediaTypeCombiner: mediatorSparqlSerialize,
           mediatorQueryResultSerializeMediaTypeFormatCombiner: mediatorSparqlSerialize,
@@ -219,31 +187,15 @@ describe('QueryEngineBase', () => {
           .toJS()['@comunica/actor-init-query:baseIRI']).toBeFalsy();
       });
 
-      it('should allow a query to modify the context\'s baseIRI', async() => {
-        expect((<any> (await queryEngine.query('BASE <http://example.org/book/> SELECT * WHERE { ?s ?p ?o }')).context)
-          .toJS())
-          .toMatchObject({
-            '@comunica/actor-init-query:baseIRI': 'myBaseIRI',
-          });
-      });
-
-      it('should pass down the provided context if optimize actors do not return one', async() => {
-        mediatorOptimizeQueryOperation.mediate = (action: any) => {
-          return Promise.resolve({ ...action, context: undefined });
-        };
-        const result = await queryEngine.query(
-          'SELECT * WHERE { ?s ?p ?o }',
-          { sources: [ 'dummy' ], 'the-answer': 42 },
-        );
-        expect(result).toHaveProperty('context');
-        expect((<ActionContext> result.context).getRaw('the-answer')).toEqual(42);
-      });
-
-      it('should allow optimize actors to modify the context', async() => {
-        mediatorOptimizeQueryOperation.mediate = (action: any) => {
+      it('should allow process actors to modify the context', async() => {
+        mediatorQueryProcess.mediate = (action: any) => {
           return Promise.resolve({
-            ...action,
-            context: action.context.setRaw('the-answer', 42),
+            result: {
+              type: 'bindings',
+              bindingsStream: input,
+              metadata: () => ({}),
+              context: action.context.setRaw('the-answer', 42),
+            },
           });
         };
         const result = await queryEngine.query('SELECT * WHERE { ?s ?p ?o }');
@@ -254,7 +206,7 @@ describe('QueryEngineBase', () => {
       it('should return a rejected promise on an invalid request', () => {
         const ctx: QueryStringContext = { sources: [ 'abc' ]};
         // Make it reject instead of reading input
-        mediatorQueryOperation.mediate = (action: any) => Promise.reject(new Error('a'));
+        mediatorQueryProcess.mediate = (action: any) => Promise.reject(new Error('a'));
         return expect(queryEngine.query('INVALID QUERY', ctx)).rejects.toBeTruthy();
       });
 
@@ -281,7 +233,7 @@ describe('QueryEngineBase', () => {
         });
 
         it('rejects for an invalid bindings query', async() => {
-          mediatorQueryOperation.mediate = jest.fn(() => Promise.resolve({ type: 'void' }));
+          mediatorQueryProcess.mediate = jest.fn(() => Promise.resolve({ result: { type: 'void' }}));
           await expect(queryEngine.queryBindings('INSERT ...')).rejects
             .toThrowError(`Query result type 'bindings' was expected, while 'void' was found.`);
         });
@@ -292,14 +244,15 @@ describe('QueryEngineBase', () => {
           input = new ArrayIterator([
             DF.quad(DF.namedNode('ex:a'), DF.namedNode('ex:a'), DF.namedNode('ex:a')),
           ]);
-          mediatorQueryOperation.mediate = jest.fn(() => Promise.resolve({ type: 'quads', quadStream: input }));
+          mediatorQueryProcess.mediate = jest.fn(() => Promise
+            .resolve({ result: { type: 'quads', quadStream: input }}));
           expect(await arrayifyStream(await queryEngine.queryQuads('CONSTRUCT ...'))).toEqualRdfQuadArray([
             DF.quad(DF.namedNode('ex:a'), DF.namedNode('ex:a'), DF.namedNode('ex:a')),
           ]);
         });
 
         it('rejects for an invalid bindings query', async() => {
-          mediatorQueryOperation.mediate = jest.fn(() => Promise.resolve({ type: 'void' }));
+          mediatorQueryProcess.mediate = jest.fn(() => Promise.resolve({ result: { type: 'void' }}));
           await expect(queryEngine.queryQuads('INSERT ...')).rejects
             .toThrowError(`Query result type 'quads' was expected, while 'void' was found.`);
         });
@@ -307,15 +260,17 @@ describe('QueryEngineBase', () => {
 
       describe('queryBoolean', () => {
         it('handles a valid boolean query', async() => {
-          mediatorQueryOperation.mediate = jest.fn(() => Promise.resolve({
-            type: 'boolean',
-            execute: () => Promise.resolve(true),
+          mediatorQueryProcess.mediate = jest.fn(() => Promise.resolve({
+            result: {
+              type: 'boolean',
+              execute: () => Promise.resolve(true),
+            },
           }));
           expect(await queryEngine.queryBoolean('ASK ...')).toEqual(true);
         });
 
         it('rejects for an invalid boolean query', async() => {
-          mediatorQueryOperation.mediate = jest.fn(() => Promise.resolve({ type: 'void' }));
+          mediatorQueryProcess.mediate = jest.fn(() => Promise.resolve({ result: { type: 'void' }}));
           await expect(queryEngine.queryBoolean('INSERT ...')).rejects
             .toThrowError(`Query result type 'boolean' was expected, while 'void' was found.`);
         });
@@ -323,15 +278,19 @@ describe('QueryEngineBase', () => {
 
       describe('queryVoid', () => {
         it('handles a valid void query', async() => {
-          mediatorQueryOperation.mediate = jest.fn(() => Promise.resolve({
-            type: 'void',
-            execute: () => Promise.resolve(true),
+          mediatorQueryProcess.mediate = jest.fn(() => Promise.resolve({
+            result: {
+              type: 'void',
+              execute: () => Promise.resolve(true),
+            },
           }));
           expect(await queryEngine.queryVoid('INSERT ...')).toEqual(true);
         });
 
         it('rejects for an invalid void query', async() => {
-          mediatorQueryOperation.mediate = jest.fn(() => Promise.resolve({ type: 'boolean' }));
+          mediatorQueryProcess.mediate = jest.fn(() => Promise.resolve({
+            result: { type: 'boolean' },
+          }));
           await expect(queryEngine.queryVoid('ASK ...')).rejects
             .toThrowError(`Query result type 'void' was expected, while 'boolean' was found.`);
         });
@@ -347,11 +306,8 @@ describe('QueryEngineBase', () => {
           { bus,
             contextKeyShortcuts,
             logger,
-            mediatorContextPreprocess,
             mediatorHttpInvalidate,
-            mediatorOptimizeQueryOperation,
-            mediatorQueryOperation,
-            mediatorQueryParse: mediatorSparqlParse,
+            mediatorQueryProcess,
             mediatorQueryResultSerialize: med,
             mediatorQueryResultSerializeMediaTypeCombiner: med,
             mediatorQueryResultSerializeMediaTypeFormatCombiner: med,
@@ -398,64 +354,18 @@ describe('QueryEngineBase', () => {
       }
     }
 
-    let input: any;
     let actor: ActorInitQueryCustom2;
     let queryEngine: QueryEngineBase<ICustomQueryContext2>;
 
     beforeEach(() => {
-      jest.resetAllMocks();
-      input = new Readable({ objectMode: true });
-      input._read = () => {
-        const triple = { a: 'triple' };
-        input.push(triple);
-        input.push(null);
-      };
-      const factory = new Factory();
-      mediatorContextPreprocess.mediate = jest.fn(
-        (action: any) => Promise.resolve(action),
-      );
-      mediatorQueryOperation.mediate = jest.fn((action: any) => {
-        if (action.context.has(KeysInitQuery.physicalQueryPlanLogger)) {
-          (<IPhysicalQueryPlanLogger> action.context.get(KeysInitQuery.physicalQueryPlanLogger))
-            .logOperation(
-              'logicalOp',
-              'physicalOp',
-              {},
-              undefined,
-              'actor',
-              {},
-            );
-        }
-        return action.operation !== 'INVALID' ?
-          Promise.resolve({ type: 'bindings', bindingsStream: input }) :
-          Promise.reject(new Error('Invalid query'));
-      });
-      mediatorSparqlParse.mediate = (action: any) => action.query === 'INVALID' ?
-        Promise.resolve({ operation: action.query }) :
-        Promise.resolve({
-          baseIRI: action.query.includes('BASE') ? 'myBaseIRI' : null,
-          operation: factory.createProject(
-            factory.createBgp([
-              factory.createPattern(DF.variable('s'), DF.variable('p'), DF.variable('o')),
-            ]),
-            [
-              DF.variable('s'),
-              DF.variable('p'),
-              DF.variable('o'),
-            ],
-          ),
-        });
       const defaultQueryInputFormat = 'sparql';
       actor = new ActorInitQueryCustom2(
         { bus,
           contextKeyShortcuts,
           defaultQueryInputFormat,
           logger,
-          mediatorContextPreprocess,
           mediatorHttpInvalidate,
-          mediatorOptimizeQueryOperation,
-          mediatorQueryOperation,
-          mediatorQueryParse: mediatorSparqlParse,
+          mediatorQueryProcess,
           mediatorQueryResultSerialize: mediatorSparqlSerialize,
           mediatorQueryResultSerializeMediaTypeCombiner: mediatorSparqlSerialize,
           mediatorQueryResultSerializeMediaTypeFormatCombiner: mediatorSparqlSerialize,
@@ -474,9 +384,9 @@ describe('QueryEngineBase', () => {
       await expect(queryEngine.query('SELECT * WHERE { ?s ?p ?o }', ctx))
         .resolves.toBeTruthy();
 
-      expect(mediatorContextPreprocess.mediate).toHaveBeenCalledTimes(1);
+      expect(mediatorQueryProcess.mediate).toHaveBeenCalledTimes(1);
 
-      const actionContext: IActionContext = mediatorContextPreprocess.mediate.mock.calls[0][0].context;
+      const actionContext: IActionContext = mediatorQueryProcess.mediate.mock.calls[0][0].context;
       expect(actionContext.get(KeysCustom1.customField1)).toBe('custom value 1');
       expect(actionContext.get(KeysCustom2.customField2)).toBe('custom value 2');
     });
@@ -487,46 +397,17 @@ describe('QueryEngineBase', () => {
     let queryEngine: QueryEngineBase;
 
     beforeEach(() => {
-      const input = new Readable({ objectMode: true });
-      input._read = () => {
-        input.push(DF.quad(
-          DF.namedNode('http://dbpedia.org/resource/Renault_Dauphine'),
-          DF.namedNode('http://dbpedia.org/ontology/assembly'),
-          DF.namedNode('http://dbpedia.org/resource/Belgium'),
-          DF.defaultGraph(),
-        ));
-        input.push(null);
-      };
-      const factory = new Factory();
-      mediatorQueryOperation.mediate = (action: any) => action.operation.query !== 'INVALID' ?
+      mediatorQueryProcess.mediate = (action: any) => action.operation.query !== 'INVALID' ?
         Promise.resolve({ quadStream: input, type: 'quads' }) :
         Promise.reject(new Error('a'));
-      mediatorSparqlParse.mediate = (action: any) => action.query === 'INVALID' ?
-        Promise.resolve(action.query) :
-        Promise.resolve({
-          baseIRI: action.query.includes('BASE') ? 'myBaseIRI' : null,
-          operation: factory.createProject(
-            factory.createBgp([
-              factory.createPattern(DF.variable('s'), DF.variable('p'), DF.variable('o')),
-            ]),
-            [
-              DF.variable('s'),
-              DF.variable('p'),
-              DF.variable('o'),
-            ],
-          ),
-        });
       const defaultQueryInputFormat = 'sparql';
       actor = new ActorInitQuery(
         { bus,
           contextKeyShortcuts,
           defaultQueryInputFormat,
           logger,
-          mediatorContextPreprocess,
           mediatorHttpInvalidate,
-          mediatorOptimizeQueryOperation,
-          mediatorQueryOperation,
-          mediatorQueryParse: mediatorSparqlParse,
+          mediatorQueryProcess,
           mediatorQueryResultSerialize: mediatorSparqlSerialize,
           mediatorQueryResultSerializeMediaTypeCombiner: mediatorSparqlSerialize,
           mediatorQueryResultSerializeMediaTypeFormatCombiner: mediatorSparqlSerialize,
@@ -537,7 +418,7 @@ describe('QueryEngineBase', () => {
 
     it('should return a rejected promise on an invalid request', () => {
       // Make it reject instead of reading input
-      mediatorQueryOperation.mediate = (action: any) => Promise.reject(new Error('a'));
+      mediatorQueryProcess.mediate = (action: any) => Promise.reject(new Error('a'));
       return expect(queryEngine.query('INVALID QUERY', { sources: [ 'abc' ]})).rejects.toBeTruthy();
     });
   });
