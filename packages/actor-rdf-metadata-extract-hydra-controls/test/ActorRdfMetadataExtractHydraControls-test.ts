@@ -30,9 +30,7 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
     });
 
     it('should not be able to create new ActorRdfMetadataExtractHydraControls objects without \'new\'', () => {
-      expect(() => {
-        (<any> ActorRdfMetadataExtractHydraControls)();
-      }).toThrow(`Class constructor ActorRdfMetadataExtractHydraControls cannot be invoked without 'new'`);
+      expect(() => { (<any> ActorRdfMetadataExtractHydraControls)(); }).toThrow();
     });
   });
 
@@ -45,11 +43,11 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
 
     it('should get no links for empty hydra properties', () => {
       const hydraProperties = {};
-      expect(actor.getLinks('myPage', hydraProperties)).toEqual({
-        first: [],
-        last: [],
-        next: [],
-        previous: [],
+      return expect(actor.getLinks('myPage', hydraProperties)).toEqual({
+        first: null,
+        last: null,
+        next: null,
+        previous: null,
       });
     });
 
@@ -61,17 +59,17 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
         previous: { myPage: [ 'previous1' ]},
         somethingElse: { myPage: [ 'next1' ]},
       };
-      expect(actor.getLinks('myPage', hydraProperties)).toEqual({
-        first: [ 'first1' ],
-        last: [ 'last1' ],
-        next: [ 'next1' ],
-        previous: [ 'previous1' ],
+      return expect(actor.getLinks('myPage', hydraProperties)).toEqual({
+        first: 'first1',
+        last: 'last1',
+        next: 'next1',
+        previous: 'previous1',
       });
     });
 
     it('should get no search forms for empty hydra properties', () => {
       const hydraProperties = {};
-      expect(actor.getSearchForms(hydraProperties)).toEqual({ values: []});
+      return expect(actor.getSearchForms(hydraProperties)).toEqual({ values: []});
     });
 
     it('should get a search forms without mappings', () => {
@@ -81,7 +79,7 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
           search1: [ 'http://example.org/' ],
         },
       };
-      expect(actor.getSearchForms(hydraProperties)).toMatchObject({ values: [{
+      return expect(actor.getSearchForms(hydraProperties)).toMatchObject({ values: [{
         // GetUri,
         mappings: {},
         template: 'http://example.org/',
@@ -117,7 +115,7 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
           search1: [ 'http://example.org/' ],
         },
       };
-      expect(actor.getSearchForms(hydraProperties)).toMatchObject({ values: [{
+      return expect(actor.getSearchForms(hydraProperties)).toMatchObject({ values: [{
         // GetUri,
         dataset: 'mydataset',
         mappings: {},
@@ -173,13 +171,13 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
       ]});
 
       expect(searchForms.values[0].getUri({ propa: 'x', propb: 'y', propc: 'z' }))
-        .toBe('http://example.org/?a=x&b=y');
+        .toEqual('http://example.org/?a=x&b=y');
       expect(searchForms.values[0].getUri({ propb: 'y' }))
-        .toBe('http://example.org/?b=y');
+        .toEqual('http://example.org/?b=y');
       expect(searchForms.values[0].getUri({}))
-        .toBe('http://example.org/');
-      expect(searchForms.values[1].getUri({ propd: 'x', propc: 'y' }))
-        .toBe('http://example.org/sub/?c=y&d=x');
+        .toEqual('http://example.org/');
+      return expect(searchForms.values[1].getUri({ propd: 'x', propc: 'y' }))
+        .toEqual('http://example.org/sub/?c=y&d=x');
     });
 
     it('should throw an error when getting a search form without a template value', () => {
@@ -200,8 +198,7 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
           mapping2: [ 'b' ],
         },
       };
-      expect(() => actor.getSearchForms(hydraProperties))
-        .toThrow(`Expected 1 hydra:template for search1`);
+      return expect(() => actor.getSearchForms(hydraProperties)).toThrow();
     });
 
     it('should throw an error when getting a search form without a template subject', () => {
@@ -220,8 +217,7 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
           mapping2: [ 'b' ],
         },
       };
-      expect(() => actor.getSearchForms(hydraProperties))
-        .toThrow(`Expected 1 hydra:template for search1`);
+      return expect(() => actor.getSearchForms(hydraProperties)).toThrow();
     });
 
     it('should throw an error when getting a search form without a template property', () => {
@@ -239,8 +235,7 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
           mapping2: [ 'b' ],
         },
       };
-      expect(() => actor.getSearchForms(hydraProperties))
-        .toThrow(`Expected 1 hydra:template for search1`);
+      return expect(() => actor.getSearchForms(hydraProperties)).toThrow();
     });
 
     it('should throw an error when getting a search form without a mapping variable value', () => {
@@ -261,8 +256,7 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
           mapping2: [ 'b' ],
         },
       };
-      expect(() => actor.getSearchForms(hydraProperties))
-        .toThrow(`Expected a hydra:variable for mapping1`);
+      expect(() => actor.getSearchForms(hydraProperties)).toThrow();
     });
 
     it('should throw an error when getting a search form without a mapping variable subject', () => {
@@ -282,8 +276,7 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
           mapping2: [ 'b' ],
         },
       };
-      expect(() => actor.getSearchForms(hydraProperties))
-        .toThrow(`Expected a hydra:variable for mapping1`);
+      expect(() => actor.getSearchForms(hydraProperties)).toThrow();
     });
 
     it('should throw an error when getting a search form without a mapping variable property', () => {
@@ -300,8 +293,7 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
           search1: [ 'http://example.org/{?a,b}' ],
         },
       };
-      expect(() => actor.getSearchForms(hydraProperties))
-        .toThrow(`Expected a hydra:variable for mapping1`);
+      expect(() => actor.getSearchForms(hydraProperties)).toThrow();
     });
 
     it('should throw an error when getting a search form without a mapping property value', () => {
@@ -322,8 +314,7 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
           mapping2: [ 'b' ],
         },
       };
-      expect(() => actor.getSearchForms(hydraProperties))
-        .toThrow(`Expected a hydra:property for mapping1`);
+      expect(() => actor.getSearchForms(hydraProperties)).toThrow();
     });
 
     it('should throw an error when getting a search form without a mapping property subject', () => {
@@ -343,8 +334,7 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
           mapping2: [ 'b' ],
         },
       };
-      expect(() => actor.getSearchForms(hydraProperties))
-        .toThrow(`Expected a hydra:property for mapping1`);
+      expect(() => actor.getSearchForms(hydraProperties)).toThrow();
     });
 
     it('should throw an error when getting a search form without a mapping property property', () => {
@@ -361,12 +351,11 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
           mapping2: [ 'b' ],
         },
       };
-      expect(() => actor.getSearchForms(hydraProperties))
-        .toThrow(`Expected a hydra:property for mapping1`);
+      expect(() => actor.getSearchForms(hydraProperties)).toThrow();
     });
 
-    it('should get hydra properties from stream', async() => {
-      await expect(actor.getHydraProperties(stream([
+    it('should get hydra properties from stream', () => {
+      return expect(actor.getHydraProperties(stream([
         quad('mypage', `${HYDRA}next`, 'next'),
         quad('mypage', `${HYDRA}previous`, 'previous'),
         quad('mypage2', `${HYDRA}previous`, 'previous2'),
@@ -394,12 +383,12 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
       });
     });
 
-    it('should test', async() => {
-      await expect(actor.test({ url: '', metadata: stream([]), requestTime: 0, context })).resolves.toBeTruthy();
+    it('should test', () => {
+      return expect(actor.test({ url: '', metadata: stream([]), requestTime: 0, context })).resolves.toBeTruthy();
     });
 
-    it('should run on valid controls', async() => {
-      await expect(actor.run({ metadata: stream([
+    it('should run on valid controls', () => {
+      return expect(actor.run({ metadata: stream([
         quad('mypage', `${HYDRA}next`, 'next'),
         quad('mypage', `${HYDRA}previous`, 'previous'),
         quad('mypage', `${HYDRA}first`, 'first'),
@@ -413,11 +402,14 @@ describe('ActorRdfMetadataExtractHydraControls', () => {
         quad('mapping2', `${HYDRA}variable`, 'b'),
         quad('mapping2', `${HYDRA}property`, 'propb'),
         quad('mypage', 'somethingelse', 'somevalue'),
-      ]), url: 'mypage', requestTime: 0, context })).resolves.toMatchObject({ metadata: {
-        first: [ 'first' ],
-        last: [ 'last' ],
-        next: [ 'next' ],
-        previous: [ 'previous' ],
+      ]),
+      url: 'mypage',
+      requestTime: 0,
+      context })).resolves.toMatchObject({ metadata: {
+        first: 'first',
+        last: 'last',
+        next: 'next',
+        previous: 'previous',
         searchForms: {
           values: [
             {

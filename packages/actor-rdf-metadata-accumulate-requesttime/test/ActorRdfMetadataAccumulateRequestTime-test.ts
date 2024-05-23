@@ -26,38 +26,38 @@ describe('ActorRdfMetadataAccumulateRequestTime', () => {
 
     describe('run', () => {
       it('should handle initialization', async() => {
-        await expect(actor.run({ context, mode: 'initialize' })).resolves
+        expect(await actor.run({ context, mode: 'initialize' }))
           .toEqual({ metadata: {}});
       });
 
       it('should handle appending with two entries', async() => {
-        await expect(actor.run({
+        expect(await actor.run({
           context,
           mode: 'append',
           accumulatedMetadata: <any> { requestTime: 2 },
           appendingMetadata: <any> { requestTime: 3 },
-        })).resolves.toEqual({ metadata: { requestTime: 5 }});
+        })).toEqual({ metadata: { requestTime: 5 }});
       });
 
       it('should handle appending with undefined entries', async() => {
-        await expect(actor.run({
+        expect(await actor.run({
           context,
           mode: 'append',
           accumulatedMetadata: <any> {},
           appendingMetadata: <any> { requestTime: 3 },
-        })).resolves.toEqual({ metadata: { requestTime: 3 }});
-        await expect(actor.run({
+        })).toEqual({ metadata: { requestTime: 3 }});
+        expect(await actor.run({
           context,
           mode: 'append',
           accumulatedMetadata: <any> { requestTime: 2 },
           appendingMetadata: <any> {},
-        })).resolves.toEqual({ metadata: { requestTime: 2 }});
-        await expect(actor.run({
+        })).toEqual({ metadata: { requestTime: 2 }});
+        expect(await actor.run({
           context,
           mode: 'append',
           accumulatedMetadata: <any> {},
           appendingMetadata: <any> {},
-        })).resolves.toEqual({ metadata: {}});
+        })).toEqual({ metadata: {}});
       });
     });
   });

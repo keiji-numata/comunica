@@ -1,6 +1,5 @@
 import { ActorAbstractPath } from '@comunica/actor-abstract-path';
 import { BindingsFactory } from '@comunica/bindings-factory';
-import type { MediatorMergeBindingsContext } from '@comunica/bus-merge-bindings-context';
 import type { IActorQueryOperationTypedMediatedArgs } from '@comunica/bus-query-operation';
 import { ActorQueryOperation } from '@comunica/bus-query-operation';
 import type { Bindings, IQueryOperationResult, IActionContext } from '@comunica/types';
@@ -9,19 +8,17 @@ import { MultiTransformIterator, TransformIterator, EmptyIterator, BufferedItera
 import { termToString } from 'rdf-string';
 import { Algebra } from 'sparqlalgebrajs';
 
+const BF = new BindingsFactory();
+
 /**
  * A comunica Path ZeroOrMore Query Operation Actor.
  */
 export class ActorQueryOperationPathZeroOrMore extends ActorAbstractPath {
-  public readonly mediatorMergeBindingsContext: MediatorMergeBindingsContext;
-
-  public constructor(args: IActorQueryOperationPathZeroOrMoreArgs) {
+  public constructor(args: IActorQueryOperationTypedMediatedArgs) {
     super(args, Algebra.types.ZERO_OR_MORE_PATH);
   }
 
   public async runOperation(operation: Algebra.Path, context: IActionContext): Promise<IQueryOperationResult> {
-    const bindingsFactory = await BindingsFactory.create(this.mediatorMergeBindingsContext, context);
-
     const distinct = await this.isPathArbitraryLengthDistinct(context, operation);
     if (distinct.operation) {
       return distinct.operation;
@@ -30,7 +27,6 @@ export class ActorQueryOperationPathZeroOrMore extends ActorAbstractPath {
     context = distinct.context;
 
     const predicate = <Algebra.ZeroOrMorePath> operation.predicate;
-    const sources = this.getPathSources(predicate);
 
     const sVar = operation.subject.termType === 'Variable';
     const oVar = operation.object.termType === 'Variable';
@@ -38,8 +34,8 @@ export class ActorQueryOperationPathZeroOrMore extends ActorAbstractPath {
     if (operation.subject.termType === 'Variable' && operation.object.termType === 'Variable') {
       // Query ?s ?p ?o, to get all possible namedNodes in de the db
       const predVar = this.generateVariable(operation);
-      const single = this.assignPatternSources(ActorAbstractPath.FACTORY
-        .createPattern(operation.subject, predVar, operation.object, operation.graph), sources);
+      const single = ActorAbstractPath.FACTORY
+        .createPattern(operation.subject, predVar, operation.object, operation.graph);
       const results = ActorQueryOperation.getSafeBindings(
         await this.mediatorQueryOperation.mediate({ context, operation: single }),
       );
@@ -88,7 +84,6 @@ export class ActorQueryOperationPathZeroOrMore extends ActorAbstractPath {
                     {},
                     it,
                     counter,
-                    bindingsFactory,
                   );
                 }
                 // If not started from this namedNode (object in triple) in this graph, start a search
@@ -106,7 +101,6 @@ export class ActorQueryOperationPathZeroOrMore extends ActorAbstractPath {
                     {},
                     it,
                     counter,
-                    bindingsFactory,
                   );
                 }
                 return it.transform<Bindings>({
@@ -125,8 +119,8 @@ export class ActorQueryOperationPathZeroOrMore extends ActorAbstractPath {
         },
       );
       const variables: RDF.Variable[] = operation.graph.termType === 'Variable' ?
-          [ subjectVar, operation.object, operation.graph ] :
-          [ subjectVar, operation.object ];
+        [ subjectVar, operation.object, operation.graph ] :
+        [ subjectVar, operation.object ];
       return {
         type: 'bindings',
         bindingsStream,
@@ -142,16 +136,14 @@ export class ActorQueryOperationPathZeroOrMore extends ActorAbstractPath {
         operation.graph,
         context,
         true,
-        bindingsFactory,
       );
-      // Check this
       const bindingsStream = starEval.bindingsStream.transform<Bindings>({
         filter: item => operation.object.equals(item.get(variable)),
         transform(item, next, push) {
           // Return graph binding if graph was a variable, otherwise empty binding
           const binding = operation.graph.termType === 'Variable' ?
-            bindingsFactory.bindings([[ operation.graph, item.get(operation.graph)! ]]) :
-            bindingsFactory.bindings();
+            BF.bindings([[ operation.graph, item.get(operation.graph)! ]]) :
+            BF.bindings();
           push(binding);
           next();
         },
@@ -176,7 +168,6 @@ export class ActorQueryOperationPathZeroOrMore extends ActorAbstractPath {
       operation.graph,
       context,
       true,
-      bindingsFactory,
     );
     const variables: RDF.Variable[] = operation.graph.termType === 'Variable' ? [ value, operation.graph ] : [ value ];
     return {
@@ -185,11 +176,4 @@ export class ActorQueryOperationPathZeroOrMore extends ActorAbstractPath {
       metadata: async() => ({ ...await starEval.metadata(), variables }),
     };
   }
-}
-
-export interface IActorQueryOperationPathZeroOrMoreArgs extends IActorQueryOperationTypedMediatedArgs {
-  /**
-   * A mediator for creating binding context merge handlers
-   */
-  mediatorMergeBindingsContext: MediatorMergeBindingsContext;
 }

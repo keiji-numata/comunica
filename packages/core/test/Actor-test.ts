@@ -16,9 +16,7 @@ describe('Actor', () => {
     });
 
     it('should not be able to create new Actor objects without \'new\'', () => {
-      expect(() => {
-        (<any> Actor)();
-      }).toThrow(`Class constructor Actor cannot be invoked without 'new'`);
+      expect(() => { (<any> Actor)(); }).toThrow();
     });
 
     it('should be a Actor constructor with a beforeActors field', () => {
@@ -44,53 +42,53 @@ describe('Actor', () => {
     });
 
     it('should have a \'name\' field', () => {
-      expect(actor.name).toBe('actor');
+      expect(actor.name).toEqual('actor');
     });
 
     it('should have a \'bus\' field', () => {
       expect(actor.bus).toEqual(bus);
     });
 
-    it('should be initializable', async() => {
-      await expect(actor.initialize()).resolves.toBeTruthy();
+    it('should be initializable', () => {
+      return expect(actor.initialize()).resolves.toBeTruthy();
     });
 
-    it('should be deinitializable', async() => {
-      await expect(actor.deinitialize()).resolves.toBeTruthy();
+    it('should be deinitializable', () => {
+      return expect(actor.deinitialize()).resolves.toBeTruthy();
     });
 
     it('should call bus#onRun and actor#run when actor#runObservable is called', () => {
       const action = { myAction: true };
       const output = actor.runObservable(action);
-      expect(actor.run).toHaveBeenCalledWith(action);
-      expect(bus.onRun).toHaveBeenCalledWith(actor, action, output);
+      expect(actor.run).toBeCalledWith(action);
+      expect(bus.onRun).toBeCalledWith(actor, action, output);
     });
 
     describe('logger proxy methods without logger', () => {
       const context = new ActionContext({});
 
       it('should void on trace', () => {
-        actor.logTrace(context, 'bla');
+        return actor.logTrace(context, 'bla');
       });
 
       it('should void on debug', () => {
-        actor.logDebug(context, 'bla');
+        return actor.logDebug(context, 'bla');
       });
 
       it('should void on info', () => {
-        actor.logInfo(context, 'bla');
+        return actor.logInfo(context, 'bla');
       });
 
       it('should void on warn', () => {
-        actor.logWarn(context, 'bla');
+        return actor.logWarn(context, 'bla');
       });
 
       it('should void on error', () => {
-        actor.logError(context, 'bla');
+        return actor.logError(context, 'bla');
       });
 
       it('should void on fatal', () => {
-        actor.logFatal(context, 'bla');
+        return actor.logFatal(context, 'bla');
       });
     });
 
@@ -111,49 +109,49 @@ describe('Actor', () => {
 
       it('should call the logger on trace', () => {
         actor.logTrace(context, 'bla', () => ({}));
-        expect(logger.trace).toHaveBeenCalledWith('bla', { actor: 'actor' });
+        return expect(logger.trace).toBeCalledWith('bla', { actor: 'actor' });
       });
 
       it('should call the logger on trace without data', () => {
         actor.logTrace(context, 'bla');
-        expect(logger.trace).toHaveBeenCalledWith('bla', { actor: 'actor' });
+        return expect(logger.trace).toBeCalledWith('bla', { actor: 'actor' });
       });
 
       it('should call the logger on debug', () => {
         actor.logDebug(context, 'bla', () => ({}));
-        expect(logger.debug).toHaveBeenCalledWith('bla', { actor: 'actor' });
+        return expect(logger.debug).toBeCalledWith('bla', { actor: 'actor' });
       });
 
       it('should call the logger on info', () => {
         actor.logInfo(context, 'bla', () => ({}));
-        expect(logger.info).toHaveBeenCalledWith('bla', { actor: 'actor' });
+        return expect(logger.info).toBeCalledWith('bla', { actor: 'actor' });
       });
 
       it('should call the logger on warn', () => {
         actor.logWarn(context, 'bla', () => ({}));
-        expect(logger.warn).toHaveBeenCalledWith('bla', { actor: 'actor' });
+        return expect(logger.warn).toBeCalledWith('bla', { actor: 'actor' });
       });
 
       it('should call the logger on error', () => {
         actor.logError(context, 'bla', () => ({}));
-        expect(logger.error).toHaveBeenCalledWith('bla', { actor: 'actor' });
+        return expect(logger.error).toBeCalledWith('bla', { actor: 'actor' });
       });
 
       it('should call the logger on fatal', () => {
         actor.logFatal(context, 'bla', () => ({}));
-        expect(logger.fatal).toHaveBeenCalledWith('bla', { actor: 'actor' });
+        return expect(logger.fatal).toBeCalledWith('bla', { actor: 'actor' });
       });
     });
   });
 
   describe('#getContextLogger', () => {
     it('for a context without logger should return a falsy value', () => {
-      expect(Actor.getContextLogger(new ActionContext({}))).toBeFalsy();
+      return expect(Actor.getContextLogger(new ActionContext({}))).toBeFalsy();
     });
 
     it('for a context with logger should return the logger', () => {
       const logger = 'blabla';
-      expect(Actor.getContextLogger(new ActionContext({ [KeysCore.log.name]: logger }))).toBe(logger);
+      return expect(Actor.getContextLogger(new ActionContext({ [KeysCore.log.name]: logger }))).toBe(logger);
     });
   });
 });

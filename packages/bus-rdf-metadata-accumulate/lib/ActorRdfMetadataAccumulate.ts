@@ -1,6 +1,6 @@
 import type { IAction, IActorArgs, IActorOutput, IActorTest, Mediate } from '@comunica/core';
 import { Actor } from '@comunica/core';
-import type { MetadataBindings } from '@comunica/types';
+import type { MetadataQuads } from '@comunica/types';
 
 /**
  * A comunica actor for rdf-metadata-accumulate events.
@@ -17,8 +17,8 @@ import type { MetadataBindings } from '@comunica/types';
 export abstract class ActorRdfMetadataAccumulate
   extends Actor<IActionRdfMetadataAccumulate, IActorTest, IActorRdfMetadataAccumulateOutput> {
   /**
-   * @param args - @defaultNested {<default_bus> a <cc:components/Bus.jsonld#Bus>} bus
-   */
+  * @param args - @defaultNested {<default_bus> a <cc:components/Bus.jsonld#Bus>} bus
+  */
   public constructor(args: IActorRdfMetadataAccumulateArgs) {
     super(args);
   }
@@ -43,12 +43,12 @@ export interface IActionRdfMetadataAccumulateAppend extends IAction {
    * The metadata object that already has some accumulated fields.
    * This object should not be mutated.
    */
-  accumulatedMetadata: MetadataBindings;
+  accumulatedMetadata: MetadataQuads;
   /**
    * The metadata object with fields to append.
    * This object should not be mutated.
    */
-  appendingMetadata: MetadataBindings;
+  appendingMetadata: MetadataQuads;
 }
 
 export interface IActorRdfMetadataAccumulateOutput extends IActorOutput {
@@ -56,16 +56,11 @@ export interface IActorRdfMetadataAccumulateOutput extends IActorOutput {
    * The initialized or accumulated metadata object.
    * This should only contain those fields that are applicable to this actor.
    */
-  metadata: Partial<MetadataBindings>;
+  metadata: Partial<MetadataQuads>;
 }
 
 export type IActorRdfMetadataAccumulateArgs = IActorArgs<
-IActionRdfMetadataAccumulate,
-IActorTest,
-IActorRdfMetadataAccumulateOutput
->;
+IActionRdfMetadataAccumulate, IActorTest, IActorRdfMetadataAccumulateOutput>;
 
 export type MediatorRdfMetadataAccumulate = Mediate<
-IActionRdfMetadataAccumulate,
-IActorRdfMetadataAccumulateOutput
->;
+IActionRdfMetadataAccumulate, IActorRdfMetadataAccumulateOutput>;

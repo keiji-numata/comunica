@@ -18,12 +18,8 @@ import type { Bus, IActorReply } from './Bus';
  * @template T The test type of an actor.
  * @template O The output type of an actor.
  */
-export abstract class Mediator<
-  A extends Actor<I, T, O>,
-I extends IAction,
-T extends IActorTest,
-O extends IActorOutput,
-> implements IMediatorArgs<A, I, T, O> {
+export abstract class Mediator<A extends Actor<I, T, O>,
+  I extends IAction, T extends IActorTest, O extends IActorOutput> implements IMediatorArgs<A, I, T, O> {
   public readonly name: string;
   public readonly bus: Bus<A, I, T, O>;
 
@@ -104,12 +100,8 @@ O extends IActorOutput,
   protected abstract mediateWith(action: I, testResults: IActorReply<A, I, T, O>[]): Promise<A>;
 }
 
-export interface IMediatorArgs<
-  A extends Actor<I, T, O>,
-I extends IAction,
-T extends IActorTest,
-O extends IActorOutput,
-> {
+export interface IMediatorArgs<A extends Actor<I, T, O>,
+  I extends IAction, T extends IActorTest, O extends IActorOutput> {
   /**
    * The name for this mediator.
    * @default {<rdf:subject>}

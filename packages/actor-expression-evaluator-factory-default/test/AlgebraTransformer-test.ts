@@ -40,47 +40,47 @@ describe('AlgebraTransformer', () => {
   });
 
   it('transform term', async() => {
-    await expect(algebraTransformer.transformAlgebra({
+    expect(await algebraTransformer.transformAlgebra({
       type: types.EXPRESSION,
       expressionType: expressionTypes.TERM,
       term: DF.namedNode('http://example.com'),
-    })).resolves.toEqual(new E.NamedNode('http://example.com'));
+    })).toEqual(new E.NamedNode('http://example.com'));
 
-    await expect(algebraTransformer.transformAlgebra({
+    expect(await algebraTransformer.transformAlgebra({
       type: types.EXPRESSION,
       expressionType: expressionTypes.TERM,
       term: DF.blankNode('foo'),
-    })).resolves.toEqual(new E.BlankNode('foo'));
+    })).toEqual(new E.BlankNode('foo'));
 
-    await expect(algebraTransformer.transformAlgebra({
+    expect(await algebraTransformer.transformAlgebra({
       type: types.EXPRESSION,
       expressionType: expressionTypes.TERM,
       term: DF.literal('foo'),
-    })).resolves.toEqual(new E.StringLiteral('foo'));
+    })).toEqual(new E.StringLiteral('foo'));
 
-    await expect(algebraTransformer.transformAlgebra({
+    expect(await algebraTransformer.transformAlgebra({
       type: types.EXPRESSION,
       expressionType: expressionTypes.TERM,
       term: DF.variable('foo'),
-    })).resolves.toEqual(new E.Variable('?foo'));
+    })).toEqual(new E.Variable('?foo'));
   });
 
   it('transform special operator upper case', async() => {
-    await expect(algebraTransformer.transformAlgebra({
+    expect(await algebraTransformer.transformAlgebra({
       type: types.EXPRESSION,
       expressionType: expressionTypes.OPERATOR,
       operator: 'BNODE',
       args: [],
-    })).resolves.toBeInstanceOf(E.SpecialOperator);
+    })).toBeInstanceOf(E.SpecialOperator);
   });
 
   it('transform special operator lower case', async() => {
-    await expect(algebraTransformer.transformAlgebra({
+    expect(await algebraTransformer.transformAlgebra({
       type: types.EXPRESSION,
       expressionType: expressionTypes.OPERATOR,
       operator: 'bnode',
       args: [],
-    })).resolves.toBeInstanceOf(E.SpecialOperator);
+    })).toBeInstanceOf(E.SpecialOperator);
   });
 
   it('transform special operator bad arity', async() => {
@@ -93,16 +93,16 @@ describe('AlgebraTransformer', () => {
   });
 
   it('transform special operator infinite arity', async() => {
-    await expect(algebraTransformer.transformAlgebra({
+    expect(await algebraTransformer.transformAlgebra({
       type: types.EXPRESSION,
       expressionType: expressionTypes.OPERATOR,
       operator: 'coalesce',
       args: [],
-    })).resolves.toBeInstanceOf(E.SpecialOperator);
+    })).toBeInstanceOf(E.SpecialOperator);
   });
 
   it('transform regular operator lower case', async() => {
-    await expect(algebraTransformer.transformAlgebra({
+    expect(await algebraTransformer.transformAlgebra({
       type: types.EXPRESSION,
       expressionType: expressionTypes.OPERATOR,
       operator: 'uminus',
@@ -111,11 +111,11 @@ describe('AlgebraTransformer', () => {
         expressionType: expressionTypes.TERM,
         term: DF.literal(''),
       }],
-    })).resolves.toBeInstanceOf(E.Operator);
+    })).toBeInstanceOf(E.Operator);
   });
 
   it('transform regular operator upper case', async() => {
-    await expect(algebraTransformer.transformAlgebra({
+    expect(await algebraTransformer.transformAlgebra({
       type: types.EXPRESSION,
       expressionType: expressionTypes.OPERATOR,
       operator: 'UMINUS',
@@ -124,7 +124,7 @@ describe('AlgebraTransformer', () => {
         expressionType: expressionTypes.TERM,
         term: DF.literal(''),
       }],
-    })).resolves.toBeInstanceOf(E.Operator);
+    })).toBeInstanceOf(E.Operator);
   });
 
   it('transform regular operator bad arity', async() => {
@@ -146,7 +146,7 @@ describe('AlgebraTransformer', () => {
   });
 
   it('transform existence', async() => {
-    await expect(algebraTransformer.transformAlgebra({
+    expect(await algebraTransformer.transformAlgebra({
       type: types.EXPRESSION,
       expressionType: expressionTypes.EXISTENCE,
       not: false,
@@ -155,7 +155,7 @@ describe('AlgebraTransformer', () => {
         variables: [],
         bindings: [],
       },
-    })).resolves.toEqual(new E.Existence({
+    })).toEqual(new E.Existence({
       type: types.EXPRESSION,
       expressionType: expressionTypes.EXISTENCE,
       not: false,
@@ -168,7 +168,7 @@ describe('AlgebraTransformer', () => {
   });
 
   it('transform aggregate', async() => {
-    await expect(algebraTransformer.transformAlgebra({
+    expect(await algebraTransformer.transformAlgebra({
       type: types.EXPRESSION,
       expressionType: expressionTypes.AGGREGATE,
       aggregator: 'count',
@@ -178,7 +178,7 @@ describe('AlgebraTransformer', () => {
         expressionType: expressionTypes.TERM,
         term: DF.variable('a'),
       },
-    })).resolves.toEqual(new E.Aggregate('count', {
+    })).toEqual(new E.Aggregate('count', {
       type: types.EXPRESSION,
       expressionType: expressionTypes.AGGREGATE,
       aggregator: 'count',
@@ -192,10 +192,10 @@ describe('AlgebraTransformer', () => {
   });
 
   it('transform wildcard', async() => {
-    await expect(algebraTransformer.transformAlgebra({
+    expect(await algebraTransformer.transformAlgebra({
       type: types.EXPRESSION,
       expressionType: expressionTypes.WILDCARD,
       wildcard: new Wildcard(),
-    })).resolves.toEqual(new E.NamedNode('*'));
+    })).toEqual(new E.NamedNode('*'));
   });
 });

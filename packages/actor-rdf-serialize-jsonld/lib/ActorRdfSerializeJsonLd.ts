@@ -1,8 +1,6 @@
-import type {
-  IActionRdfSerialize,
+import type { IActionRdfSerialize,
   IActorRdfSerializeFixedMediaTypesArgs,
-  IActorRdfSerializeOutput,
-} from '@comunica/bus-rdf-serialize';
+  IActorRdfSerializeOutput } from '@comunica/bus-rdf-serialize';
 import {
   ActorRdfSerializeFixedMediaTypes,
 } from '@comunica/bus-rdf-serialize';
@@ -31,7 +29,7 @@ export class ActorRdfSerializeJsonLd extends ActorRdfSerializeFixedMediaTypes {
     super(args);
   }
 
-  public async runHandle(action: IActionRdfSerialize, _mediaType: string, _context: IActionContext):
+  public async runHandle(action: IActionRdfSerialize, mediaType: string, context: IActionContext):
   Promise<IActorRdfSerializeOutput> {
     const writer = new JsonLdSerializer(
       { space: ' '.repeat(this.jsonStringifyIndentSpaces) },

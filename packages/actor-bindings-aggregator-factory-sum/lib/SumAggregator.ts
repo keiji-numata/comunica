@@ -10,16 +10,14 @@ type SumState = E.NumericLiteral;
 export class SumAggregator extends AggregateEvaluator {
   private state: SumState | undefined = undefined;
 
-  public constructor(
-    evaluator: IExpressionEvaluator,
+  public constructor(evaluator: IExpressionEvaluator,
     distinct: boolean,
     private readonly additionFunction: ITermFunction,
-    throwError?: boolean,
-  ) {
+    throwError?: boolean) {
     super(evaluator, distinct, throwError);
   }
 
-  public override emptyValueTerm(): RDF.Term {
+  public emptyValueTerm(): RDF.Term {
     return typedLiteral('0', TypeURL.XSD_INTEGER);
   }
 
@@ -28,7 +26,8 @@ export class SumAggregator extends AggregateEvaluator {
       this.state = this.termToNumericOrError(term);
     } else {
       const internalTerm = this.termToNumericOrError(term);
-      this.state = <E.NumericLiteral> this.additionFunction.applyOnTerms([ this.state, internalTerm ], this.evaluator);
+      this.state = <E.NumericLiteral> this.additionFunction.applyOnTerms([ this.state, internalTerm ],
+        this.evaluator);
     }
   }
 

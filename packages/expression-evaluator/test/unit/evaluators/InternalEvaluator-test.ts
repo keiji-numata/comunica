@@ -45,7 +45,7 @@ describe('MaterializedEvaluatorContext', () => {
         context: getMockEEActionContext(),
       });
       const result = evaluator.evaluateAsEBV(BF.bindings());
-      await expect(result).resolves.toBe(true);
+      expect(await result).toBe(true);
     });
 
     it('like a simple EXIST that is false', async() => {
@@ -65,7 +65,7 @@ describe('MaterializedEvaluatorContext', () => {
         context: getMockEEActionContext(),
       });
       const result = evaluator.evaluateAsEBV(BF.bindings());
-      await expect(result).resolves.toBe(false);
+      expect(await result).toBe(false);
     });
 
     it('like a NOT EXISTS', async() => {
@@ -85,7 +85,7 @@ describe('MaterializedEvaluatorContext', () => {
         context: getMockEEActionContext(),
       });
       const result = evaluator.evaluateAsEBV(BF.bindings());
-      await expect(result).resolves.toBe(true);
+      expect(await result).toBe(true);
     });
 
     it('like an EXIST that errors', async() => {

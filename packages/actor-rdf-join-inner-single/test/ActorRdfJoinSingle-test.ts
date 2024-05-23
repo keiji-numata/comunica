@@ -14,10 +14,7 @@ describe('ActorRdfJoinSingle', () => {
   describe('An ActorRdfJoinSingle instance', () => {
     let mediatorJoinSelectivity: Mediator<
     Actor<IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>,
-    IActionRdfJoinSelectivity,
-IActorTest,
-IActorRdfJoinSelectivityOutput
->;
+    IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>;
     let actor: ActorRdfJoinSingle;
     let context: IActionContext;
 
@@ -35,7 +32,7 @@ IActorRdfJoinSelectivityOutput
           type: 'inner',
           entries: [],
           context,
-        })).rejects.toThrow('Actor actor can only join a single entry');
+        })).rejects.toThrowError('Actor actor can only join a single entry');
       });
 
       it('should not test on entries with length two', async() => {
@@ -58,11 +55,11 @@ IActorRdfJoinSelectivityOutput
             },
           ],
           context,
-        })).rejects.toThrow('Actor actor can only join a single entry');
+        })).rejects.toThrowError('Actor actor can only join a single entry');
       });
 
       it('should test on one entry', async() => {
-        await expect(actor.test({
+        expect(await actor.test({
           type: 'inner',
           entries: [
             {
@@ -74,7 +71,7 @@ IActorRdfJoinSelectivityOutput
             },
           ],
           context,
-        })).resolves.toEqual({
+        })).toEqual({
           iterations: 0,
           persistedItems: 0,
           blockingItems: 0,
@@ -100,7 +97,7 @@ IActorRdfJoinSelectivityOutput
           context,
         });
         expect(output).toBe(entryOutput);
-        await expect(output.metadata()).resolves.toEqual({ cardinality: 10 });
+        expect(await output.metadata()).toEqual({ cardinality: 10 });
       });
     });
   });

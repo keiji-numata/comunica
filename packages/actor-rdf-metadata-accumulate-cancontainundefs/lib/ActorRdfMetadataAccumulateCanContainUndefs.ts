@@ -1,8 +1,5 @@
-import type {
-  IActionRdfMetadataAccumulate,
-  IActorRdfMetadataAccumulateOutput,
-  IActorRdfMetadataAccumulateArgs,
-} from '@comunica/bus-rdf-metadata-accumulate';
+import type { IActionRdfMetadataAccumulate, IActorRdfMetadataAccumulateOutput,
+  IActorRdfMetadataAccumulateArgs } from '@comunica/bus-rdf-metadata-accumulate';
 import { ActorRdfMetadataAccumulate } from '@comunica/bus-rdf-metadata-accumulate';
 import type { IActorTest } from '@comunica/core';
 
@@ -14,7 +11,7 @@ export class ActorRdfMetadataAccumulateCanContainUndefs extends ActorRdfMetadata
     super(args);
   }
 
-  public async test(_action: IActionRdfMetadataAccumulate): Promise<IActorTest> {
+  public async test(action: IActionRdfMetadataAccumulate): Promise<IActorTest> {
     return true;
   }
 

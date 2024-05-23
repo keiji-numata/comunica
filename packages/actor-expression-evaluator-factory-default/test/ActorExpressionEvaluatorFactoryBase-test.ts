@@ -17,15 +17,15 @@ describe('ActorExpressionEvaluatorFactoryDefault', () => {
       actor = getMockEEFactory();
     });
 
-    it('should test', async() => {
-      await expect(actor.test({
+    it('should test', () => {
+      return expect(actor.test({
         context: getMockEEActionContext(),
         algExpr: getMockExpression('1'),
-      })).resolves.toBe(true);
+      })).resolves.toEqual(true);
     });
 
-    it('should run', async() => {
-      await expect(actor.run({
+    it('should run', () => {
+      return expect(actor.run({
         context: getMockEEActionContext(),
         algExpr: getMockExpression('1'),
       })).resolves.toMatchObject({});

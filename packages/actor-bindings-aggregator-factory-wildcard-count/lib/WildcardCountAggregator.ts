@@ -9,15 +9,17 @@ export class WildcardCountAggregator extends AggregateEvaluator implements IBind
   private readonly bindingValues: Map<string, Set<string>> = new Map();
   private state: number | undefined = undefined;
 
-  public constructor(evaluator: IExpressionEvaluator, distinct: boolean, throwError?: boolean) {
+  public constructor(evaluator: IExpressionEvaluator,
+    distinct: boolean,
+    throwError?: boolean) {
     super(evaluator, distinct, throwError);
   }
 
-  public putTerm(_term: RDF.Term): void {
+  public putTerm(term: RDF.Term): void {
     // Do nothing, not needed
   }
 
-  public override async putBindings(bindings: RDF.Bindings): Promise<void> {
+  public async putBindings(bindings: RDF.Bindings): Promise<void> {
     if (!this.handleDistinct(bindings)) {
       if (this.state === undefined) {
         this.state = 0;
@@ -26,7 +28,7 @@ export class WildcardCountAggregator extends AggregateEvaluator implements IBind
     }
   }
 
-  public override emptyValueTerm(): RDF.Term {
+  public emptyValueTerm(): RDF.Term {
     return typedLiteral('0', TypeURL.XSD_INTEGER);
   }
 

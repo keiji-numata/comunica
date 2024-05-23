@@ -36,9 +36,7 @@ describe('ActorQueryOperationUpdateCompositeUpdate', () => {
     });
 
     it('should not be able to create new ActorQueryOperationUpdateCompositeUpdate objects without \'new\'', () => {
-      expect(() => {
-        (<any> ActorQueryOperationUpdateCompositeUpdate)();
-      }).toThrow(`Class constructor ActorQueryOperationUpdateCompositeUpdate cannot be invoked without 'new'`);
+      expect(() => { (<any> ActorQueryOperationUpdateCompositeUpdate)(); }).toThrow();
     });
   });
 
@@ -49,22 +47,22 @@ describe('ActorQueryOperationUpdateCompositeUpdate', () => {
       actor = new ActorQueryOperationUpdateCompositeUpdate({ name: 'actor', bus, mediatorQueryOperation });
     });
 
-    it('should test on compositeupdate', async() => {
+    it('should test on compositeupdate', () => {
       const op: any = { operation: { type: 'compositeupdate' }, context: new ActionContext() };
-      await expect(actor.test(op)).resolves.toBeTruthy();
+      return expect(actor.test(op)).resolves.toBeTruthy();
     });
 
-    it('should not test on readOnly', async() => {
+    it('should not test on readOnly', () => {
       const op: any = {
         operation: { type: 'compositeupdate' },
         context: new ActionContext({ [KeysQueryOperation.readOnly.name]: true }),
       };
-      await expect(actor.test(op)).rejects.toThrow(`Attempted a write operation in read-only mode`);
+      return expect(actor.test(op)).rejects.toThrowError(`Attempted a write operation in read-only mode`);
     });
 
-    it('should not test on non-compositeupdate', async() => {
+    it('should not test on non-compositeupdate', () => {
       const op: any = { operation: { type: 'some-other-type' }, context: new ActionContext() };
-      await expect(actor.test(op)).rejects.toBeTruthy();
+      return expect(actor.test(op)).rejects.toBeTruthy();
     });
 
     it('should run without updates', async() => {
@@ -76,7 +74,7 @@ describe('ActorQueryOperationUpdateCompositeUpdate', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
     });
 
@@ -91,7 +89,7 @@ describe('ActorQueryOperationUpdateCompositeUpdate', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
     });
 
@@ -108,7 +106,7 @@ describe('ActorQueryOperationUpdateCompositeUpdate', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
     });
   });

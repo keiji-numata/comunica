@@ -1,19 +1,17 @@
 import { BindingsFactory } from '@comunica/bindings-factory';
-import type { MediatorMergeBindingsContext } from '@comunica/bus-merge-bindings-context';
 import type { IActionRdfJoin, IActorRdfJoinOutputInner, IActorRdfJoinArgs } from '@comunica/bus-rdf-join';
 import { ActorRdfJoin } from '@comunica/bus-rdf-join';
 import type { IMediatorTypeJoinCoefficients } from '@comunica/mediatortype-join-coefficients';
 import { MetadataValidationState } from '@comunica/metadata';
-import type * as RDF from '@rdfjs/types';
 import { ArrayIterator } from 'asynciterator';
+
+const BF = new BindingsFactory();
 
 /**
  * A comunica None RDF Join Actor.
  */
 export class ActorRdfJoinNone extends ActorRdfJoin {
-  public readonly mediatorMergeBindingsContext: MediatorMergeBindingsContext;
-
-  public constructor(args: IActorRdfJoinNoneArgs) {
+  public constructor(args: IActorRdfJoinArgs) {
     super(args, {
       logicalType: 'inner',
       physicalName: 'none',
@@ -21,7 +19,7 @@ export class ActorRdfJoinNone extends ActorRdfJoin {
     });
   }
 
-  public override async test(action: IActionRdfJoin): Promise<IMediatorTypeJoinCoefficients> {
+  public async test(action: IActionRdfJoin): Promise<IMediatorTypeJoinCoefficients> {
     // Allow joining of one or zero streams
     if (action.entries.length > 0) {
       throw new Error(`Actor ${this.name} can only join zero entries`);
@@ -30,10 +28,9 @@ export class ActorRdfJoinNone extends ActorRdfJoin {
   }
 
   protected async getOutput(action: IActionRdfJoin): Promise<IActorRdfJoinOutputInner> {
-    const bindingsFactory = await BindingsFactory.create(this.mediatorMergeBindingsContext, action.context);
     return {
       result: {
-        bindingsStream: new ArrayIterator<RDF.Bindings>([ bindingsFactory.bindings() ], { autoStart: false }),
+        bindingsStream: new ArrayIterator([ BF.bindings() ], { autoStart: false }),
         metadata: () => Promise.resolve({
           state: new MetadataValidationState(),
           cardinality: { type: 'exact', value: 1 },
@@ -53,11 +50,4 @@ export class ActorRdfJoinNone extends ActorRdfJoin {
       requestTime: 0,
     };
   }
-}
-
-export interface IActorRdfJoinNoneArgs extends IActorRdfJoinArgs {
-  /**
-   * A mediator for creating binding context merge handlers
-   */
-  mediatorMergeBindingsContext: MediatorMergeBindingsContext;
 }

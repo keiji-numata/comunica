@@ -22,33 +22,23 @@ describe('Runner', () => {
     });
 
     it('should not be able to create new Runner objects without \'new\'', () => {
-      expect(() => {
-        (<any> Runner)();
-      }).toThrow('Class constructor Runner cannot be invoked without \'new\'');
+      expect(() => { (<any> Runner)(); }).toThrow();
     });
 
     it('should throw an error when constructed without actors', () => {
-      expect(() => {
-        new (<any> Runner)(bus);
-      }).toThrow(`A valid "actors" argument must be provided.`);
+      expect(() => { new (<any> Runner)(bus); }).toThrow();
     });
 
     it('should throw an error when constructed without a bus', () => {
-      expect(() => {
-        new (<any> Runner)(undefined, []);
-      }).toThrow(`A valid "busInit" argument must be provided.`);
+      expect(() => { new (<any> Runner)(undefined, []); }).toThrow();
     });
 
     it('should throw an error when constructed without a name and bus', () => {
-      expect(() => {
-        new (<any> Runner)({});
-      }).toThrow(`A valid "actors" argument must be provided.`);
+      expect(() => { new (<any> Runner)({}); }).toThrow();
     });
 
     it('should throw an error when constructed without arguments', () => {
-      expect(() => {
-        new (<any> Runner)();
-      }).toThrow(`A valid "busInit" argument must be provided.`);
+      expect(() => { new (<any> Runner)(); }).toThrow();
     });
   });
 
@@ -57,13 +47,13 @@ describe('Runner', () => {
     let actor1: Actor<IAction, IActorTest, IActorOutput>;
     let actor2: Actor<IAction, IActorTest, IActorOutput>;
 
-    const actorTest = async(action: any) => {
-      return new Promise((resolve) => {
+    const actorTest = (action: any) => {
+      return new Promise(resolve => {
         resolve({ type: 'test', sent: action });
       });
     };
-    const actorRun = async(action: any) => {
-      return new Promise((resolve) => {
+    const actorRun = (action: any) => {
+      return new Promise(resolve => {
         resolve({ type: 'run', sent: action });
       });
     };
@@ -107,24 +97,24 @@ describe('Runner', () => {
       expect(actor2.run).toHaveBeenCalledWith({ context, argv: [ 'a', 'b' ], env: { c: 'd' }});
     });
 
-    it('should be initializable', async() => {
+    it('should be initializable', () => {
       (<any> runner).actors = [ actor1, actor2 ];
-      await expect(runner.initialize()).resolves.toBeTruthy();
+      return expect(runner.initialize()).resolves.toBeTruthy();
     });
 
-    it('should be deinitializable', async() => {
+    it('should be deinitializable', () => {
       (<any> runner).actors = [ actor1, actor2 ];
-      await expect(runner.deinitialize()).resolves.toBeTruthy();
+      return expect(runner.deinitialize()).resolves.toBeTruthy();
     });
 
     describe('collectActors', () => {
-      it('should collect for no identifiers', async() => {
-        expect(runner.collectActors({})).toEqual({});
+      it('should collect for no identifiers', () => {
+        return expect(runner.collectActors({})).toEqual({});
       });
 
-      it('should collect for valid identifiers', async() => {
+      it('should collect for valid identifiers', () => {
         (<any> runner).actors = [ actor1, actor2 ];
-        expect(runner.collectActors({
+        return expect(runner.collectActors({
           a: 'actor1',
           b: 'actor2',
         })).toEqual({
@@ -133,9 +123,9 @@ describe('Runner', () => {
         });
       });
 
-      it('should throw for a missing actor', async() => {
+      it('should throw for a missing actor', () => {
         (<any> runner).actors = [ actor1, actor2 ];
-        expect(() => runner.collectActors({
+        return expect(() => runner.collectActors({
           a: 'actor1',
           b: 'actor2',
           c: 'actor3',

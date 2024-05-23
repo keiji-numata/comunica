@@ -23,9 +23,7 @@ describe('ActorRdfParseHtmlRdfa', () => {
     });
 
     it('should not be able to create new ActorRdfParseHtmlRdfa objects without \'new\'', () => {
-      expect(() => {
-        (<any> ActorRdfParseHtmlRdfa)();
-      }).toThrow(`Class constructor ActorRdfParseHtmlRdfa cannot be invoked without 'new'`);
+      expect(() => { (<any> ActorRdfParseHtmlRdfa)(); }).toThrow();
     });
   });
 
@@ -38,7 +36,7 @@ describe('ActorRdfParseHtmlRdfa', () => {
 
     describe('test', () => {
       it('should return true', async() => {
-        await expect(actor.test(<any> {})).resolves.toBeTruthy();
+        expect(await actor.test(<any> {})).toBeTruthy();
       });
     });
 
@@ -77,8 +75,8 @@ describe('ActorRdfParseHtmlRdfa', () => {
       it('should set the profile, baseIRI and language', async() => {
         const listener = (await actor.run(action)).htmlParseListener;
         expect((<any> listener).features).toBe(RDFA_FEATURES.xhtml);
-        expect((<any> listener).util.baseIRI.value).toBe('http://example.org/');
-        expect((<any> listener).activeTagStack[0].language).toBe('en-us');
+        expect((<any> listener).util.baseIRI.value).toEqual('http://example.org/');
+        expect((<any> listener).activeTagStack[0].language).toEqual('en-us');
       });
 
       it('should set the profile, baseIRI and language for empty headers', async() => {
@@ -87,7 +85,7 @@ describe('ActorRdfParseHtmlRdfa', () => {
 
         const listener = (await actor.run(action)).htmlParseListener;
         expect((<any> listener).features).toBe(RDFA_FEATURES.html);
-        expect((<any> listener).util.baseIRI.value).toBe('http://example.org/');
+        expect((<any> listener).util.baseIRI.value).toEqual('http://example.org/');
         expect((<any> listener).activeTagStack[0].language).toBeFalsy();
       });
 
@@ -97,7 +95,7 @@ describe('ActorRdfParseHtmlRdfa', () => {
 
         const listener = (await actor.run(action)).htmlParseListener;
         expect((<any> listener).features).toBe(RDFA_FEATURES.html);
-        expect((<any> listener).util.baseIRI.value).toBe('http://example.org/');
+        expect((<any> listener).util.baseIRI.value).toEqual('http://example.org/');
         expect((<any> listener).activeTagStack[0].language).toBeFalsy();
       });
 

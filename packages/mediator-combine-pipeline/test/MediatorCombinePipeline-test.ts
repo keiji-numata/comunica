@@ -34,7 +34,7 @@ describe('MediatorCombinePipeline', () => {
     });
 
     it('should throw an error when mediateWith is called', () => {
-      expect(() => (<any> mediator).mediateWith({}, [])).toThrow('Method not supported.');
+      return expect(() => (<any> mediator).mediateWith({}, [])).toThrow();
     });
 
     it('should mediate without changing the context', async() => {
@@ -49,7 +49,7 @@ describe('MediatorCombinePipeline', () => {
       const result = await mediator.mediate({ field: 1, context });
       expect(result).toHaveProperty('context');
       expect(result.context).not.toEqual(context);
-      expect(result.context.toJS().id).toBe(1_000);
+      expect(result.context.toJS().id).toEqual(1_000);
     });
   });
 
@@ -113,10 +113,9 @@ describe('MediatorCombinePipeline', () => {
       new DummyConcatActor('a', bus, {});
     });
 
-    it('should mediate without changing the context', async() => {
+    it('should mediate without changing the context', () => {
       const context = new ActionContext();
-      await expect(() => mediator.mediate({ field: '_', context })).rejects
-        .toThrow('Cannot order elements that are not numbers.');
+      return expect(() => mediator.mediate({ field: '_', context })).rejects.toThrowError();
     });
   });
 
@@ -129,10 +128,9 @@ describe('MediatorCombinePipeline', () => {
       new DummyConcatActor('a', bus, {});
     });
 
-    it('should mediate without changing the context', async() => {
+    it('should mediate without changing the context', () => {
       const context = new ActionContext();
-      await expect(() => mediator.mediate({ field: '_', context })).rejects
-        .toThrow('Cannot order elements that are not numbers.');
+      return expect(() => mediator.mediate({ field: '_', context })).rejects.toThrowError();
     });
   });
 
@@ -163,12 +161,12 @@ describe('MediatorCombinePipeline', () => {
     });
 
     it('should throw an error when mediateWith is called', () => {
-      expect(() => (<any> mediator).mediateWith({}, [])).toThrow('Method not supported.');
+      return expect(() => (<any> mediator).mediateWith({}, [])).toThrow();
     });
 
     it('should throw an error when mediate is called', async() => {
       const context = new ActionContext();
-      await expect(() => mediator.mediate({ field: 1, context })).rejects.toThrow('Dummy Error');
+      await expect(() => mediator.mediate({ field: 1, context })).rejects.toThrowError('Dummy Error');
     });
   });
 
@@ -184,7 +182,7 @@ describe('MediatorCombinePipeline', () => {
     });
 
     it('should throw an error when mediateWith is called', () => {
-      expect(() => (<any> mediator).mediateWith({}, [])).toThrow('Method not supported.');
+      return expect(() => (<any> mediator).mediateWith({}, [])).toThrow();
     });
 
     it('should mediate without changing the context', async() => {
@@ -199,7 +197,7 @@ describe('MediatorCombinePipeline', () => {
       const result = await mediator.mediate({ field: 1, context });
       expect(result).toHaveProperty('context');
       expect(result.context).not.toEqual(context);
-      expect(result.context.toJS().id).toBe(1_000);
+      expect(result.context.toJS().id).toEqual(1_000);
     });
   });
 
@@ -210,9 +208,9 @@ describe('MediatorCombinePipeline', () => {
       mediator = new MediatorCombinePipeline({ name: 'mediator', bus });
     });
 
-    it('should mediate', async() => {
+    it('should mediate', () => {
       const context = new ActionContext();
-      await expect(mediator.mediate({ field: 1, context })).resolves.toEqual({ field: 1, context });
+      return expect(mediator.mediate({ field: 1, context })).resolves.toEqual({ field: 1, context });
     });
   });
 });
@@ -249,7 +247,7 @@ class DummyThrowActor extends DummyActor {
     super(id, bus, testOutput);
   }
 
-  public override async test(action: IDummyAction): Promise<IActorTest> {
+  public async test(action: IDummyAction): Promise<IActorTest> {
     throw new Error('Dummy Error');
   }
 }
@@ -259,8 +257,7 @@ class DummyConcatActor extends Actor<IDummyConcatAction, IActorTest, IDummyConca
 
   public constructor(
     id: string,
-    bus: Bus<DummyConcatActor, IDummyConcatAction, IActorTest, IDummyConcatOutput>,
-    testOutput: IActorTest,
+    bus: Bus<DummyConcatActor, IDummyConcatAction, IActorTest, IDummyConcatOutput>, testOutput: IActorTest,
   ) {
     super({ name: `dummy${id}`, bus });
     this.id = id;
@@ -277,7 +274,7 @@ class DummyConcatActor extends Actor<IDummyConcatAction, IActorTest, IDummyConca
 }
 
 class DummyActorContextOutput extends DummyActor {
-  public override async run(action: IDummyAction): Promise<IDummyOutput> {
+  public async run(action: IDummyAction): Promise<IDummyOutput> {
     return {
       ...await super.run(action),
       context: (<ActionContext> action.context).setRaw('id', this.id),

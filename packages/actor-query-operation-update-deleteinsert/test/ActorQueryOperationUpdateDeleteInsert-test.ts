@@ -14,12 +14,6 @@ const factory = new Factory();
 const DF = new DataFactory();
 const BF = new BindingsFactory();
 
-const mediatorMergeBindingsContext: any = {
-  mediate(arg: any) {
-    return {};
-  },
-};
-
 describe('ActorQueryOperationUpdateDeleteInsert', () => {
   let bus: any;
   let mediatorQueryOperation: any;
@@ -60,9 +54,7 @@ describe('ActorQueryOperationUpdateDeleteInsert', () => {
     });
 
     it('should not be able to create new ActorQueryOperationUpdateDeleteInsert objects without \'new\'', () => {
-      expect(() => {
-        (<any> ActorQueryOperationUpdateDeleteInsert)();
-      }).toThrow(`Class constructor ActorQueryOperationUpdateDeleteInsert cannot be invoked without 'new'`);
+      expect(() => { (<any> ActorQueryOperationUpdateDeleteInsert)(); }).toThrow();
     });
   });
 
@@ -75,32 +67,31 @@ describe('ActorQueryOperationUpdateDeleteInsert', () => {
         bus,
         mediatorQueryOperation,
         mediatorUpdateQuads,
-        mediatorMergeBindingsContext,
       });
     });
 
-    it('should test on deleteinsert', async() => {
+    it('should test on deleteinsert', () => {
       const op: any = { operation: { type: 'deleteinsert' }, context: new ActionContext() };
-      await expect(actor.test(op)).resolves.toBeTruthy();
+      return expect(actor.test(op)).resolves.toBeTruthy();
     });
 
-    it('should not test on readOnly', async() => {
+    it('should not test on readOnly', () => {
       const op: any = {
         operation: { type: 'deleteinsert' },
         context: new ActionContext({ [KeysQueryOperation.readOnly.name]: true }),
       };
-      await expect(actor.test(op)).rejects.toThrow(`Attempted a write operation in read-only mode`);
+      return expect(actor.test(op)).rejects.toThrowError(`Attempted a write operation in read-only mode`);
     });
 
-    it('should not test on non-deleteinsert', async() => {
+    it('should not test on non-deleteinsert', () => {
       const op: any = { operation: { type: 'some-other-type' }, context: new ActionContext() };
-      await expect(actor.test(op)).rejects.toBeTruthy();
+      return expect(actor.test(op)).rejects.toBeTruthy();
     });
 
     it('should run without operation input', async() => {
       const op: any = { operation: { type: 'deleteinsert' }, context: new ActionContext() };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
       expect(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert).toBeUndefined();
       expect(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete).toBeUndefined();
@@ -117,9 +108,9 @@ describe('ActorQueryOperationUpdateDeleteInsert', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
-      await expect(arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert)).resolves.toEqual([
+      expect(await arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert)).toEqual([
         DF.quad(DF.namedNode('s'), DF.namedNode('p'), DF.namedNode('o')),
       ]);
       expect(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete).toBeUndefined();
@@ -136,10 +127,10 @@ describe('ActorQueryOperationUpdateDeleteInsert', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
       expect(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert).toBeUndefined();
-      await expect(arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete)).resolves.toEqual([
+      expect(await arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete)).toEqual([
         DF.quad(DF.namedNode('s'), DF.namedNode('p'), DF.namedNode('o')),
       ]);
     });
@@ -158,12 +149,12 @@ describe('ActorQueryOperationUpdateDeleteInsert', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
-      await expect(arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert)).resolves.toEqual([
+      expect(await arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert)).toEqual([
         DF.quad(DF.namedNode('s1'), DF.namedNode('p1'), DF.namedNode('o1')),
       ]);
-      await expect(arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete)).resolves.toEqual([
+      expect(await arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete)).toEqual([
         DF.quad(DF.namedNode('s2'), DF.namedNode('p2'), DF.namedNode('o2')),
       ]);
     });
@@ -180,14 +171,13 @@ describe('ActorQueryOperationUpdateDeleteInsert', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
-      await expect(arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert))
-        .resolves.toBeRdfIsomorphic([
-          DF.quad(DF.namedNode('s'), DF.namedNode('p'), DF.literal('1')),
-          DF.quad(DF.namedNode('s'), DF.namedNode('p'), DF.literal('2')),
-          DF.quad(DF.namedNode('s'), DF.namedNode('p'), DF.literal('3')),
-        ]);
+      expect(await arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert)).toBeRdfIsomorphic([
+        DF.quad(DF.namedNode('s'), DF.namedNode('p'), DF.literal('1')),
+        DF.quad(DF.namedNode('s'), DF.namedNode('p'), DF.literal('2')),
+        DF.quad(DF.namedNode('s'), DF.namedNode('p'), DF.literal('3')),
+      ]);
       expect(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete).toBeUndefined();
     });
 
@@ -203,15 +193,14 @@ describe('ActorQueryOperationUpdateDeleteInsert', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
       expect(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert).toBeUndefined();
-      await expect(arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete))
-        .resolves.toBeRdfIsomorphic([
-          DF.quad(DF.namedNode('s'), DF.namedNode('p'), DF.literal('1')),
-          DF.quad(DF.namedNode('s'), DF.namedNode('p'), DF.literal('2')),
-          DF.quad(DF.namedNode('s'), DF.namedNode('p'), DF.literal('3')),
-        ]);
+      expect(await arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete)).toBeRdfIsomorphic([
+        DF.quad(DF.namedNode('s'), DF.namedNode('p'), DF.literal('1')),
+        DF.quad(DF.namedNode('s'), DF.namedNode('p'), DF.literal('2')),
+        DF.quad(DF.namedNode('s'), DF.namedNode('p'), DF.literal('3')),
+      ]);
     });
 
     it('should run with insert, delete and where', async() => {
@@ -229,27 +218,25 @@ describe('ActorQueryOperationUpdateDeleteInsert', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
-      await expect(arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert))
-        .resolves.toBeRdfIsomorphic([
-          DF.quad(DF.namedNode('s1'), DF.namedNode('p1'), DF.literal('1')),
-          DF.quad(DF.namedNode('s1'), DF.namedNode('p1'), DF.literal('2')),
-          DF.quad(DF.namedNode('s1'), DF.namedNode('p1'), DF.literal('3')),
-        ]);
-      await expect(arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete))
-        .resolves.toBeRdfIsomorphic([
-          DF.quad(DF.namedNode('s2'), DF.namedNode('p2'), DF.literal('1')),
-          DF.quad(DF.namedNode('s2'), DF.namedNode('p2'), DF.literal('2')),
-          DF.quad(DF.namedNode('s2'), DF.namedNode('p2'), DF.literal('3')),
-        ]);
+      expect(await arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert)).toBeRdfIsomorphic([
+        DF.quad(DF.namedNode('s1'), DF.namedNode('p1'), DF.literal('1')),
+        DF.quad(DF.namedNode('s1'), DF.namedNode('p1'), DF.literal('2')),
+        DF.quad(DF.namedNode('s1'), DF.namedNode('p1'), DF.literal('3')),
+      ]);
+      expect(await arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete)).toBeRdfIsomorphic([
+        DF.quad(DF.namedNode('s2'), DF.namedNode('p2'), DF.literal('1')),
+        DF.quad(DF.namedNode('s2'), DF.namedNode('p2'), DF.literal('2')),
+        DF.quad(DF.namedNode('s2'), DF.namedNode('p2'), DF.literal('3')),
+      ]);
     });
 
     it('should return a rejecting updateResult when the update actor\'s result rejects', async() => {
       const error = new Error('DeleteInsert error');
-      jest.spyOn(mediatorUpdateQuads, 'mediate').mockResolvedValue({
+      mediatorUpdateQuads.mediate = jest.fn(() => Promise.resolve({
         execute: () => Promise.reject(error),
-      });
+      }));
 
       const op: any = {
         operation: {
@@ -258,7 +245,7 @@ describe('ActorQueryOperationUpdateDeleteInsert', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).rejects.toBe(error);
     });
 
@@ -282,9 +269,9 @@ describe('ActorQueryOperationUpdateDeleteInsert', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
-      await expect(arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert)).resolves.toEqual([]);
+      expect(await arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert)).toEqual([]);
       expect(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete).toBeUndefined();
     });
 
@@ -308,10 +295,10 @@ describe('ActorQueryOperationUpdateDeleteInsert', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
       expect(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert).toBeUndefined();
-      await expect(arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete)).resolves.toEqual([]);
+      expect(await arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete)).toEqual([]);
     });
 
     it('should run with insert, delete and where without matches', async() => {
@@ -337,10 +324,10 @@ describe('ActorQueryOperationUpdateDeleteInsert', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
-      await expect(arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert)).resolves.toEqual([]);
-      await expect(arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete)).resolves.toEqual([]);
+      expect(await arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamInsert)).toEqual([]);
+      expect(await arrayifyStream(mediatorUpdateQuads.mediate.mock.calls[0][0].quadStreamDelete)).toEqual([]);
     });
   });
 });

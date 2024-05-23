@@ -9,24 +9,24 @@ describe('ProxyHandlerStatic', () => {
   });
 
   it('should modify a string-based request', async() => {
-    await expect(proxy.getProxy({ input: 'http://example.org/' })).resolves
+    expect(await proxy.getProxy({ input: 'http://example.org/' }))
       .toEqual({ input: 'http://prefix.org/http://example.org/' });
   });
 
   it('should modify a string-based request with init', async() => {
-    await expect(proxy.getProxy({ input: 'http://example.org/', init: { a: 'B' }})).resolves
+    expect(await proxy.getProxy({ input: 'http://example.org/', init: { a: 'B' }}))
       .toEqual({ input: 'http://prefix.org/http://example.org/', init: { a: 'B' }});
   });
 
   it('should modify an object-based request', async() => {
     expect((await proxy.getProxy({ input: new Request('http://example.org/') })).input.url)
-      .toBe('http://prefix.org/http://example.org/');
+      .toEqual('http://prefix.org/http://example.org/');
   });
 
   it('should modify an object-based request with options', async() => {
     const init = { headers: new Headers({ a: 'b' }) };
     const rewritten = await proxy.getProxy({ input: new Request('http://example.org/', init) });
-    expect(rewritten.input.url).toBe('http://prefix.org/http://example.org/');
-    expect(rewritten.input.headers.get('a')).toBe('b');
+    expect(rewritten.input.url).toEqual('http://prefix.org/http://example.org/');
+    expect(rewritten.input.headers.get('a')).toEqual('b');
   });
 });

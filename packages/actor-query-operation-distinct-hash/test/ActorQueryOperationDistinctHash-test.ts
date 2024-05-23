@@ -1,6 +1,6 @@
 import { BindingsFactory } from '@comunica/bindings-factory';
-import { ActorQueryOperation } from '@comunica/bus-query-operation';
 import { ActionContext, Bus } from '@comunica/core';
+import type { IQueryOperationResultBindings } from '@comunica/types';
 import { ArrayIterator } from 'asynciterator';
 import { DataFactory } from 'rdf-data-factory';
 import { ActorQueryOperationDistinctHash } from '..';
@@ -44,7 +44,7 @@ describe('ActorQueryOperationDistinctHash', () => {
       );
     });
     it('should create a filter', async() => {
-      await expect(actor.newHashFilter(new ActionContext())).resolves.toBeInstanceOf(Function);
+      expect(await actor.newHashFilter(new ActionContext())).toBeInstanceOf(Function);
     });
 
     it('should create a filter that is a predicate', async() => {
@@ -88,26 +88,27 @@ describe('ActorQueryOperationDistinctHash', () => {
       );
     });
 
-    it('should test on distinct', async() => {
+    it('should test on distinct', () => {
       const op: any = { operation: { type: 'distinct' }, context: new ActionContext() };
-      await expect(actor.test(op)).resolves.toBeTruthy();
+      return expect(actor.test(op)).resolves.toBeTruthy();
     });
 
-    it('should not test on non-distinct', async() => {
+    it('should not test on non-distinct', () => {
       const op: any = { operation: { type: 'some-other-type' }, context: new ActionContext() };
-      await expect(actor.test(op)).rejects.toBeTruthy();
+      return expect(actor.test(op)).rejects.toBeTruthy();
     });
 
-    it('should run', async() => {
+    it('should run', () => {
       const op: any = { operation: { type: 'distinct' }, context: new ActionContext() };
-      const output = ActorQueryOperation.getSafeBindings(await actor.run(op));
-      await expect(output.metadata()).resolves.toEqual({ cardinality: 5, variables: [ DF.variable('a') ]});
-      expect(output.type).toBe('bindings');
-      await expect(output.bindingsStream).toEqualBindingsStream([
-        BF.bindings([[ DF.variable('a'), DF.literal('1') ]]),
-        BF.bindings([[ DF.variable('a'), DF.literal('2') ]]),
-        BF.bindings([[ DF.variable('a'), DF.literal('3') ]]),
-      ]);
+      return actor.run(op).then(async(output: IQueryOperationResultBindings) => {
+        expect(await output.metadata()).toEqual({ cardinality: 5, variables: [ DF.variable('a') ]});
+        expect(output.type).toEqual('bindings');
+        await expect(output.bindingsStream).toEqualBindingsStream([
+          BF.bindings([[ DF.variable('a'), DF.literal('1') ]]),
+          BF.bindings([[ DF.variable('a'), DF.literal('2') ]]),
+          BF.bindings([[ DF.variable('a'), DF.literal('3') ]]),
+        ]);
+      });
     });
   });
 });

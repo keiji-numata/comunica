@@ -41,56 +41,56 @@ describe('ActorRdfUpdateHypermediaPutLdp', () => {
       });
     });
 
-    it('should test', async() => {
+    it('should test', () => {
       const context = new ActionContext({ [KeysRdfUpdateQuads.destination.name]: 'abc' });
       const url = 'abc';
       const metadata = { allowHttpMethods: [ 'OTHER', 'PUT' ]};
       const exists = false;
-      await expect(actor.test({ context, url, metadata, exists })).resolves.toBeTruthy();
+      return expect(actor.test({ context, url, metadata, exists })).resolves.toBeTruthy();
     });
 
-    it('should not test on missing allowHttpMethods PUT in metadata', async() => {
+    it('should not test on missing allowHttpMethods PUT in metadata', () => {
       const context = new ActionContext({ [KeysRdfUpdateQuads.destination.name]: 'abc' });
       const url = 'abc';
       const metadata = { allowHttpMethods: [ 'OTHER' ]};
       const exists = false;
-      await expect(actor.test({ context, url, metadata, exists })).rejects
+      return expect(actor.test({ context, url, metadata, exists })).rejects
         .toThrow(`Actor actor could not detect a destination with 'Allow: PUT' header.`);
     });
 
-    it('should not test on an existing destination', async() => {
+    it('should not test on an existing destination', () => {
       const context = new ActionContext({ [KeysRdfUpdateQuads.destination.name]: 'abc' });
       const url = 'abc';
       const metadata = { allowHttpMethods: [ 'PUT' ]};
       const exists = true;
-      await expect(actor.test({ context, url, metadata, exists })).rejects
+      return expect(actor.test({ context, url, metadata, exists })).rejects
         .toThrow(`Actor actor can only put on a destination that does not already exists.`);
     });
 
-    it('should test on invalid metadata with forced destination type', async() => {
+    it('should test on invalid metadata with forced destination type', () => {
       const context = new ActionContext({ [KeysRdfUpdateQuads.destination.name]: 'abc' });
       const url = 'abc';
       const metadata = { somethingElse: true };
       const exists = false;
-      await expect(actor.test({ context, url, metadata, exists, forceDestinationType: 'putLdp' }))
+      return expect(actor.test({ context, url, metadata, exists, forceDestinationType: 'putLdp' }))
         .resolves.toBeTruthy();
     });
 
-    it('should test on invalid metadata with forced destination type on an existing destination', async() => {
+    it('should test on invalid metadata with forced destination type on an existing destination', () => {
       const context = new ActionContext({ [KeysRdfUpdateQuads.destination.name]: 'abc' });
       const url = 'abc';
       const metadata = { somethingElse: true };
       const exists = true;
-      await expect(actor.test({ context, url, metadata, exists, forceDestinationType: 'putLdp' }))
+      return expect(actor.test({ context, url, metadata, exists, forceDestinationType: 'putLdp' }))
         .resolves.toBeTruthy();
     });
 
-    it('should not test on invalid metadata with forced destination type for different destination type', async() => {
+    it('should not test on invalid metadata with forced destination type for different destination type', () => {
       const context = new ActionContext({ [KeysRdfUpdateQuads.destination.name]: 'abc' });
       const url = 'abc';
       const metadata = { somethingElse: true };
       const exists = true;
-      await expect(actor.test({ context, url, metadata, exists, forceDestinationType: 'different' }))
+      return expect(actor.test({ context, url, metadata, exists, forceDestinationType: 'different' }))
         .rejects.toThrow('Actor actor is not able to handle destination type different.');
     });
 
@@ -99,7 +99,7 @@ describe('ActorRdfUpdateHypermediaPutLdp', () => {
       const url = 'abc';
       const metadata = { putLdp: true };
       const exists = true;
-      await expect(actor.run({ context, url, metadata, exists })).resolves.toEqual({
+      expect(await actor.run({ context, url, metadata, exists })).toEqual({
         destination: expect.any(QuadDestinationPutLdp),
       });
     });

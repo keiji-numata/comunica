@@ -1,12 +1,9 @@
-import type {
-  IActionSparqlSerialize,
+import type { IActionSparqlSerialize,
   IActorQueryResultSerializeFixedMediaTypesArgs,
-  IActorQueryResultSerializeOutput,
-} from '@comunica/bus-query-result-serialize';
+  IActorQueryResultSerializeOutput } from '@comunica/bus-query-result-serialize';
 import { ActorQueryResultSerializeFixedMediaTypes } from '@comunica/bus-query-result-serialize';
 import type {
-  Bindings,
-  IActionContext,
+  Bindings, IActionContext,
   IQueryOperationResultBindings,
   IQueryOperationResultQuads,
 } from '@comunica/types';
@@ -41,7 +38,7 @@ export class ActorQueryResultSerializeTable extends ActorQueryResultSerializeFix
     return str.repeat(count);
   }
 
-  public override async testHandleChecked(action: IActionSparqlSerialize, _context: IActionContext): Promise<boolean> {
+  public async testHandleChecked(action: IActionSparqlSerialize, context: IActionContext): Promise<boolean> {
     if (![ 'bindings', 'quads' ].includes(action.type)) {
       throw new Error('This actor can only handle bindings or quad streams.');
     }
@@ -71,7 +68,7 @@ export class ActorQueryResultSerializeTable extends ActorQueryResultSerializeFix
       .join(' ')}\n`);
   }
 
-  public async runHandle(action: IActionSparqlSerialize, _mediaType: string, _context: IActionContext):
+  public async runHandle(action: IActionSparqlSerialize, mediaType: string, context: IActionContext):
   Promise<IActorQueryResultSerializeOutput> {
     const data = new Readable();
     data._read = () => {

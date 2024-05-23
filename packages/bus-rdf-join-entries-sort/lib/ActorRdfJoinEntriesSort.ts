@@ -39,12 +39,7 @@ export interface IActorRdfJoinEntriesSortOutput extends IActorOutput {
 }
 
 export type IActorRdfJoinEntriesSortArgs = IActorArgs<
-IActionRdfJoinEntriesSort,
-IActorTest,
-IActorRdfJoinEntriesSortOutput
->;
+IActionRdfJoinEntriesSort, IActorTest, IActorRdfJoinEntriesSortOutput>;
 
 export type MediatorRdfJoinEntriesSort = Mediate<
-IActionRdfJoinEntriesSort,
-IActorRdfJoinEntriesSortOutput
->;
+IActionRdfJoinEntriesSort, IActorRdfJoinEntriesSortOutput>;

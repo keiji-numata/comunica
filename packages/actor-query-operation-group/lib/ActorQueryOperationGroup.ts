@@ -1,7 +1,5 @@
-import { BindingsFactory } from '@comunica/bindings-factory';
 import type { MediatorBindingsAggregatorFactory } from '@comunica/bus-bindings-aggeregator-factory';
 import type { MediatorHashBindings } from '@comunica/bus-hash-bindings';
-import type { MediatorMergeBindingsContext } from '@comunica/bus-merge-bindings-context';
 import type { IActorQueryOperationTypedMediatedArgs } from '@comunica/bus-query-operation';
 import { ActorQueryOperation, ActorQueryOperationTypedMediated } from '@comunica/bus-query-operation';
 import type { IActorTest } from '@comunica/core';
@@ -15,7 +13,6 @@ import { GroupsState } from './GroupsState';
  */
 export class ActorQueryOperationGroup extends ActorQueryOperationTypedMediated<Algebra.Group> {
   public readonly mediatorHashBindings: MediatorHashBindings;
-  public readonly mediatorMergeBindingsContext: MediatorMergeBindingsContext;
   private readonly mediatorBindingsAggregatorFactory: MediatorBindingsAggregatorFactory;
 
   public constructor(args: IActorQueryOperationGroupArgs) {
@@ -33,7 +30,6 @@ export class ActorQueryOperationGroup extends ActorQueryOperationTypedMediated<A
 
   public async runOperation(operation: Algebra.Group, context: IActionContext):
   Promise<IQueryOperationResult> {
-    const bindingsFactory = await BindingsFactory.create(this.mediatorMergeBindingsContext, context);
     // Create a hash function
     const { hashFunction } = await this.mediatorHashBindings.mediate({ allowHashCollisions: true, context });
 
@@ -52,19 +48,12 @@ export class ActorQueryOperationGroup extends ActorQueryOperationTypedMediated<A
 
     // Wrap a new promise inside an iterator that completes when the stream has ended or when an error occurs
     const bindingsStream = new TransformIterator(() => new Promise<BindingsStream>((resolve, reject) => {
-      const groups = new GroupsState(
-        hashFunction,
-        operation,
-        this.mediatorBindingsAggregatorFactory,
-        context,
-        bindingsFactory,
-      );
+      const groups = new GroupsState(hashFunction, operation, this.mediatorBindingsAggregatorFactory, context);
 
       // Phase 2: Collect aggregator results
       // We can only return when the binding stream ends, when that happens
       // we return the identified groups. Which are nothing more than Bindings
       // of the grouping variables merged with the aggregate variables
-      // eslint-disable-next-line ts/no-misused-promises
       output.bindingsStream.on('end', async() => {
         try {
           const bindingsStreamInner = new ArrayIterator(await groups.collectResults(), { autoStart: false });
@@ -80,7 +69,7 @@ export class ActorQueryOperationGroup extends ActorQueryOperationTypedMediated<A
       // Phase 1: Consume the stream, identify the groups and populate the aggregators.
       // We need to bind this after the 'error' and 'end' listeners to avoid the
       // stream having ended before those listeners are bound.
-      output.bindingsStream.on('data', (bindings) => {
+      output.bindingsStream.on('data', bindings => {
         groups.consumeBindings(bindings).catch(reject);
       });
     }), { autoStart: false });
@@ -95,9 +84,5 @@ export class ActorQueryOperationGroup extends ActorQueryOperationTypedMediated<A
 
 export interface IActorQueryOperationGroupArgs extends IActorQueryOperationTypedMediatedArgs {
   mediatorHashBindings: MediatorHashBindings;
-  /**
-   * A mediator for creating binding context merge handlers
-   */
-  mediatorMergeBindingsContext: MediatorMergeBindingsContext;
   mediatorBindingsAggregatorFactory: MediatorBindingsAggregatorFactory;
 }

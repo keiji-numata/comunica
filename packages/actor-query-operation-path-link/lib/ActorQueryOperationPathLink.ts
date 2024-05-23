@@ -16,12 +16,9 @@ export class ActorQueryOperationPathLink extends ActorAbstractPath {
     context: IActionContext,
   ): Promise<IQueryOperationResult> {
     const predicate = <Algebra.Link> operationOriginal.predicate;
-    const operation = Object.assign(ActorAbstractPath.FACTORY.createPattern(
-      operationOriginal.subject,
-      predicate.iri,
-      operationOriginal.object,
-      operationOriginal.graph,
-    ), { metadata: predicate.metadata });
+    const operation = ActorAbstractPath.FACTORY.createPattern(
+      operationOriginal.subject, predicate.iri, operationOriginal.object, operationOriginal.graph,
+    );
     return this.mediatorQueryOperation.mediate({ operation, context });
   }
 }

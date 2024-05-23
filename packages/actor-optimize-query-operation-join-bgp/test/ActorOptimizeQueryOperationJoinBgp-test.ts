@@ -31,9 +31,7 @@ describe('ActorOptimizeQueryOperationJoinBgp', () => {
     });
 
     it('should not be able to create new ActorOptimizeQueryOperationJoinBgp objects without \'new\'', () => {
-      expect(() => {
-        (<any> ActorOptimizeQueryOperationJoinBgp)();
-      }).toThrow(`Class constructor ActorOptimizeQueryOperationJoinBgp cannot be invoked without 'new'`);
+      expect(() => { (<any> ActorOptimizeQueryOperationJoinBgp)(); }).toThrow();
     });
   });
 
@@ -44,27 +42,27 @@ describe('ActorOptimizeQueryOperationJoinBgp', () => {
       actor = new ActorOptimizeQueryOperationJoinBgp({ name: 'actor', bus });
     });
 
-    it('should always test', async() => {
-      await expect(actor.test({ operation: <any> null, context })).resolves.toBeTruthy();
+    it('should always test', () => {
+      return expect(actor.test({ operation: <any> null, context })).resolves.toBeTruthy();
     });
 
-    it('should run on and not modify a BGP', async() => {
+    it('should run on and not modify a BGP', () => {
       const operation = factory.createBgp([
         factory.createPattern(DF.namedNode('s1'), DF.namedNode('p1'), DF.namedNode('o1')),
         factory.createPattern(DF.namedNode('s2'), DF.namedNode('p2'), DF.namedNode('o2')),
       ]);
-      await expect(actor.run({ operation, context })).resolves.toMatchObject({ operation });
+      return expect(actor.run({ operation, context })).resolves.toMatchObject({ operation });
     });
 
-    it('should run on and not modify a join without inner BGPs', async() => {
+    it('should run on and not modify a join without inner BGPs', () => {
       const operation = factory.createJoin([
         factory.createPattern(DF.namedNode('s1'), DF.namedNode('p1'), DF.namedNode('o1')),
         factory.createPattern(DF.namedNode('s2'), DF.namedNode('p2'), DF.namedNode('o2')),
       ]);
-      await expect(actor.run({ operation, context })).resolves.toMatchObject({ operation });
+      return expect(actor.run({ operation, context })).resolves.toMatchObject({ operation });
     });
 
-    it('should run on and not modify a join without left BGP', async() => {
+    it('should run on and not modify a join without left BGP', () => {
       const bgp1 = factory.createBgp([
         factory.createPattern(DF.namedNode('s1'), DF.namedNode('p1'), DF.namedNode('o1')),
         factory.createPattern(DF.namedNode('s2'), DF.namedNode('p2'), DF.namedNode('o2')),
@@ -73,10 +71,10 @@ describe('ActorOptimizeQueryOperationJoinBgp', () => {
         factory.createPattern(DF.namedNode('s1'), DF.namedNode('p1'), DF.namedNode('o1')),
         bgp1,
       ]);
-      await expect(actor.run({ operation, context })).resolves.toMatchObject({ operation });
+      return expect(actor.run({ operation, context })).resolves.toMatchObject({ operation });
     });
 
-    it('should run on and not modify a join without right BGP', async() => {
+    it('should run on and not modify a join without right BGP', () => {
       const bgp1 = factory.createBgp([
         factory.createPattern(DF.namedNode('s1'), DF.namedNode('p1'), DF.namedNode('o1')),
         factory.createPattern(DF.namedNode('s2'), DF.namedNode('p2'), DF.namedNode('o2')),
@@ -85,10 +83,10 @@ describe('ActorOptimizeQueryOperationJoinBgp', () => {
         bgp1,
         factory.createPattern(DF.namedNode('s2'), DF.namedNode('p2'), DF.namedNode('o2')),
       ]);
-      await expect(actor.run({ operation, context })).resolves.toMatchObject({ operation });
+      return expect(actor.run({ operation, context })).resolves.toMatchObject({ operation });
     });
 
-    it('should run on and modify a join with left and right BGP', async() => {
+    it('should run on and modify a join with left and right BGP', () => {
       const bgp1 = factory.createBgp([
         factory.createPattern(DF.namedNode('s1'), DF.namedNode('p1'), DF.namedNode('o1')),
         factory.createPattern(DF.namedNode('s2'), DF.namedNode('p2'), DF.namedNode('o2')),
@@ -107,7 +105,7 @@ describe('ActorOptimizeQueryOperationJoinBgp', () => {
         factory.createPattern(DF.namedNode('s3'), DF.namedNode('p3'), DF.namedNode('o3')),
         factory.createPattern(DF.namedNode('s4'), DF.namedNode('p4'), DF.namedNode('o4')),
       ]);
-      await expect(actor.run({ operation, context })).resolves.toMatchObject({ operation: operationOut });
+      return expect(actor.run({ operation, context })).resolves.toMatchObject({ operation: operationOut });
     });
   });
 });

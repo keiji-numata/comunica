@@ -17,7 +17,6 @@ describe('ActorBindingsAggregatorFactoryMin', () => {
   let bus: any;
   let mediatorExpressionEvaluatorFactory: MediatorExpressionEvaluatorFactory;
   let mediatorTermComparatorFactory: MediatorTermComparatorFactory;
-  const exception = 'This actor only supports the \'min\' aggregator.';
 
   beforeEach(() => {
     bus = new Bus({ name: 'bus' });
@@ -57,30 +56,30 @@ describe('ActorBindingsAggregatorFactoryMin', () => {
     });
 
     describe('test', () => {
-      it('accepts min 1', async() => {
-        await expect(actor.test({
+      it('accepts min 1', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('min', false),
         })).resolves.toEqual({});
       });
 
-      it('accepts min 2', async() => {
-        await expect(actor.test({
+      it('accepts min 2', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('min', true),
         })).resolves.toEqual({});
       });
 
-      it('rejects sum', async() => {
-        await expect(actor.test({
+      it('rejects sum', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('sum', false),
-        })).rejects.toThrow(exception);
+        })).rejects.toThrow();
       });
     });
 
-    it('should run', async() => {
-      await expect(actor.run({
+    it('should run', () => {
+      return expect(actor.run({
         context,
         expr: makeAggregate('min', false),
       })).resolves.toMatchObject({});

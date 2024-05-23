@@ -1,13 +1,9 @@
-import type {
-  IActionSparqlSerialize,
+import type { IActionSparqlSerialize,
   IActorQueryResultSerializeFixedMediaTypesArgs,
-  IActorQueryResultSerializeOutput,
-} from '@comunica/bus-query-result-serialize';
+  IActorQueryResultSerializeOutput } from '@comunica/bus-query-result-serialize';
 import { ActorQueryResultSerializeFixedMediaTypes } from '@comunica/bus-query-result-serialize';
 import type {
-  Bindings,
-  IActionContext,
-  IQueryOperationResultBindings,
+  Bindings, IActionContext, IQueryOperationResultBindings,
   IQueryOperationResultBoolean,
 } from '@comunica/types';
 import type * as RDF from '@rdfjs/types';
@@ -69,14 +65,14 @@ export class ActorQueryResultSerializeSparqlXml extends ActorQueryResultSerializ
     }
   }
 
-  public override async testHandleChecked(action: IActionSparqlSerialize, _context: IActionContext): Promise<boolean> {
+  public async testHandleChecked(action: IActionSparqlSerialize, context: IActionContext): Promise<boolean> {
     if (![ 'bindings', 'boolean' ].includes(action.type)) {
       throw new Error('This actor can only handle bindings streams or booleans.');
     }
     return true;
   }
 
-  public async runHandle(action: IActionSparqlSerialize, _mediaType: string, _context: IActionContext):
+  public async runHandle(action: IActionSparqlSerialize, mediaType: string, context: IActionContext):
   Promise<IActorQueryResultSerializeOutput> {
     const data = new Readable();
     data._read = () => {
@@ -101,8 +97,9 @@ export class ActorQueryResultSerializeSparqlXml extends ActorQueryResultSerializ
       });
       resultStream.on('data', (bindings: Bindings) => {
         // XML SPARQL results spec does not allow unbound variables and blank node bindings
-        serializer.add({ name: 'result', children: [ ...bindings ]
-          .map(([ key, value ]) => ActorQueryResultSerializeSparqlXml.bindingToXmlBindings(value, key)) });
+        serializer.add({ name: 'result',
+          children: [ ...bindings ]
+            .map(([ key, value ]) => ActorQueryResultSerializeSparqlXml.bindingToXmlBindings(value, key)) });
       });
 
       // Close streams

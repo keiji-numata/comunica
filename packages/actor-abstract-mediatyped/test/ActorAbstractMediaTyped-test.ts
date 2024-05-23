@@ -17,51 +17,49 @@ describe('ActorAbstractMediaTyped', () => {
     });
 
     it('should not be able to create new ActorAbstractMediaTyped objects without \'new\'', () => {
-      expect(() => {
-        (<any> ActorAbstractMediaTyped)();
-      }).toThrow(`Class constructor ActorAbstractMediaTyped cannot be invoked without 'new'`);
+      expect(() => { (<any> ActorAbstractMediaTyped)(); }).toThrow();
     });
   });
 
   describe('An ActorAbstractMediaTyped instance', () => {
     const actor = new (<any> ActorAbstractMediaTyped)({ bus, name: 'actor' });
 
-    it('should test for a media type action', async() => {
+    it('should test for a media type action', () => {
       actor.testMediaType = () => Promise.resolve(true);
-      await expect(actor.test({ mediaTypes: true })).resolves.toBeTruthy();
+      return expect(actor.test({ mediaTypes: true })).resolves.toBeTruthy();
     });
 
-    it('should test for a media type format action', async() => {
+    it('should test for a media type format action', () => {
       actor.testMediaTypeFormats = () => Promise.resolve(true);
-      await expect(actor.test({ mediaTypeFormats: true })).resolves.toBeTruthy();
+      return expect(actor.test({ mediaTypeFormats: true })).resolves.toBeTruthy();
     });
 
-    it('should test for a handle action', async() => {
+    it('should test for a handle action', () => {
       actor.testHandle = () => Promise.resolve(true);
-      await expect(actor.test({ handle: true, handleMediaType: 'a' })).resolves.toBeTruthy();
+      return expect(actor.test({ handle: true, handleMediaType: 'a' })).resolves.toBeTruthy();
     });
 
-    it('should not test for an invalid action', async() => {
-      await expect(actor.test({ invalid: true })).rejects.toBeTruthy();
+    it('should not test for an invalid action', () => {
+      return expect(actor.test({ invalid: true })).rejects.toBeTruthy();
     });
 
-    it('should run for a media type action', async() => {
+    it('should run for a media type action', () => {
       actor.getMediaTypes = () => Promise.resolve(true);
-      await expect(actor.run({ mediaTypes: true })).resolves.toBeTruthy();
+      return expect(actor.run({ mediaTypes: true })).resolves.toBeTruthy();
     });
 
-    it('should run for a media type format action', async() => {
+    it('should run for a media type format action', () => {
       actor.getMediaTypeFormats = () => Promise.resolve(true);
-      await expect(actor.run({ mediaTypeFormats: true })).resolves.toBeTruthy();
+      return expect(actor.run({ mediaTypeFormats: true })).resolves.toBeTruthy();
     });
 
-    it('should run for a handle action', async() => {
+    it('should run for a handle action', () => {
       actor.runHandle = () => Promise.resolve(true);
-      await expect(actor.run({ handle: true, handleMediaType: 'a' })).resolves.toBeTruthy();
+      return expect(actor.run({ handle: true, handleMediaType: 'a' })).resolves.toBeTruthy();
     });
 
-    it('should not run for an invalid action', async() => {
-      await expect(actor.run({ invalid: true })).rejects.toBeTruthy();
+    it('should not run for an invalid action', () => {
+      return expect(actor.run({ invalid: true })).rejects.toBeTruthy();
     });
   });
 });

@@ -1,8 +1,5 @@
-import type {
-  IActionRdfMetadataExtract,
-  IActorRdfMetadataExtractOutput,
-  IActorRdfMetadataExtractArgs,
-} from '@comunica/bus-rdf-metadata-extract';
+import type { IActionRdfMetadataExtract, IActorRdfMetadataExtractOutput,
+  IActorRdfMetadataExtractArgs } from '@comunica/bus-rdf-metadata-extract';
 import { ActorRdfMetadataExtract } from '@comunica/bus-rdf-metadata-extract';
 import type { IActorTest } from '@comunica/core';
 
@@ -14,7 +11,7 @@ export class ActorRdfMetadataExtractPutAccepted extends ActorRdfMetadataExtract 
     super(args);
   }
 
-  public async test(_action: IActionRdfMetadataExtract): Promise<IActorTest> {
+  public async test(action: IActionRdfMetadataExtract): Promise<IActorTest> {
     return true;
   }
 

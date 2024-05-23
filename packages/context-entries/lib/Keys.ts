@@ -1,21 +1,20 @@
 import { ActionContextKey, CONTEXT_KEY_LOGGER } from '@comunica/core';
 import type {
-  AsyncExtensionFunctionCreator,
   Bindings,
-  FunctionArgumentsCache,
-  IActionContext,
-  IAggregatedStore,
-  ICliArgsHandler,
-  IDataDestination,
   IPhysicalQueryPlanLogger,
-  IProxyHandler,
-  IQuerySourceWrapper,
-  ISuperTypeProvider,
-  ITimeZoneRepresentation,
-  MetadataBindings,
   QueryExplainMode,
-  QuerySourceReference,
-  QuerySourceUnidentified,
+  IProxyHandler,
+  ICliArgsHandler,
+  DataSources,
+  IDataSource,
+  IDataDestination,
+  MetadataBindings,
+  FunctionArgumentsCache,
+  IAggregatedStore,
+  IActionContext,
+  ITimeZoneRepresentation,
+  AsyncExtensionFunctionCreator,
+  ISuperTypeProvider,
 } from '@comunica/types';
 import type * as RDF from '@rdfjs/types';
 import type { IDocumentLoader } from 'jsonld-context-parser';
@@ -23,7 +22,7 @@ import type { Algebra } from 'sparqlalgebrajs';
 
 /**
  * When adding entries to this file, also add a shortcut for them in the contextKeyShortcuts TSDoc comment in
- * ActorInitQueryBase in @comunica/actor-init-query if it makes sense to use this entry externally.
+ * ActorIniQueryBase in @comunica/actor-init-query if it makes sense to use this entry externally.
  * Also, add this shortcut to IQueryContextCommon in @comunica/types.
  */
 
@@ -96,12 +95,6 @@ export const KeysHttpProxy = {
 
 export const KeysInitQuery = {
   /**
-   * The unidentified sources to query over.
-   */
-  querySourcesUnidentified: new ActionContextKey<QuerySourceUnidentified[]>(
-    '@comunica/actor-init-query:querySourcesUnidentified',
-  ),
-  /**
    * Variables that have to be pre-bound to values in the query.
    */
   initialBindings: new ActionContextKey<RDF.Bindings>('@comunica/actor-init-query:initialBindings'),
@@ -161,7 +154,8 @@ export const KeysInitQuery = {
    */
   extensionFunctions: new ActionContextKey<
   Record<string, (args: RDF.Term[]) => Promise<RDF.Term>>
-    >('@comunica/actor-init-query:extensionFunctions'),
+  // eslint-disable-next-line @typescript-eslint/no-extra-parens
+  >('@comunica/actor-init-query:extensionFunctions'),
   /**
    * Enables manipulation of the CLI arguments and their processing.
    */
@@ -185,10 +179,6 @@ export const KeysInitQuery = {
    * A JSON-LD context
    */
   jsonLdContext: new ActionContextKey<any>('@context'),
-  /**
-   * A boolean value denoting whether caching is disabled or not.
-   */
-  noCache: new ActionContextKey<boolean>('@comunica/actor-init-query:noCache'),
 };
 
 export const KeysExpressionEvaluator = {
@@ -235,10 +225,6 @@ export const KeysQueryOperation = {
    * If the default graph should also contain the union of all named graphs.
    */
   unionDefaultGraph: new ActionContextKey<boolean>('@comunica/bus-query-operation:unionDefaultGraph'),
-  /**
-   * The sources to query over.
-   */
-  querySources: new ActionContextKey<IQuerySourceWrapper[]>('@comunica/bus-query-operation:querySources'),
 };
 
 export const KeysRdfParseJsonLd = {
@@ -267,24 +253,25 @@ export const KeysRdfParseHtmlScript = {
   extractAllScripts: new ActionContextKey<boolean>('extractAllScripts'),
 };
 
-export const KeysQuerySourceIdentify = {
+export const KeysRdfResolveQuadPattern = {
+  /**
+   * Data sources.
+   */
+  sources: new ActionContextKey<DataSources>('@comunica/bus-rdf-resolve-quad-pattern:sources'),
+  /**
+   * A data source.
+   */
+  source: new ActionContextKey<IDataSource>('@comunica/bus-rdf-resolve-quad-pattern:source'),
   /**
    * A map containing unique IDs for each source
    */
-  sourceIds: new ActionContextKey<Map<QuerySourceReference, string>>(
-    '@comunica/bus-query-source-identify:sourceIds',
-  ),
+  sourceIds: new ActionContextKey<Map<IDataSource, string>>('@comunica/bus-rdf-resolve-quad-pattern:sourceIds'),
   /**
    * Hypermedia sources mapping to their aggregated store.
    */
   hypermediaSourcesAggregatedStores: new ActionContextKey<Map<string, IAggregatedStore>>(
-    '@comunica/bus-query-source-identify:hypermediaSourcesAggregatedStores',
+    '@comunica/bus-rdf-resolve-quad-pattern:hypermediaSourcesAggregatedStores',
   ),
-  /**
-   * If links may be traversed from this source.
-   * This means that sources annotated with this flag are considered incomplete until all links have been traversed.
-   */
-  traverse: new ActionContextKey<boolean>('@comunica/bus-query-source-identify:traverse'),
 };
 
 export const KeysRdfUpdateQuads = {
@@ -292,11 +279,4 @@ export const KeysRdfUpdateQuads = {
    * A data destination.
    */
   destination: new ActionContextKey<IDataDestination>('@comunica/bus-rdf-update-quads:destination'),
-};
-
-export const KeysRdfJoin = {
-  /**
-   * The last physical join actor that was executed.
-   */
-  lastPhysicalJoin: new ActionContextKey<string>('@comunica/bus-rdf-join:lastPhysicalJoin'),
 };

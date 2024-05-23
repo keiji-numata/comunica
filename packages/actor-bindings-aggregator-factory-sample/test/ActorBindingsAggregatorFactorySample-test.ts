@@ -15,7 +15,6 @@ describe('ActorBindingsAggregatorFactorySample', () => {
   let bus: any;
   let mediatorExpressionEvaluatorFactory: MediatorExpressionEvaluatorFactory;
   let context: IActionContext;
-  const exception = 'This actor only supports the \'sample\' aggregator.';
 
   beforeEach(() => {
     bus = new Bus({ name: 'bus' });
@@ -52,30 +51,30 @@ describe('ActorBindingsAggregatorFactorySample', () => {
     });
 
     describe('test', () => {
-      it('accepts sample 1', async() => {
-        await expect(actor.test({
+      it('accepts sample 1', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('sample', false),
         })).resolves.toEqual({});
       });
 
-      it('accepts sample 2', async() => {
-        await expect(actor.test({
+      it('accepts sample 2', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('sample', true),
         })).resolves.toEqual({});
       });
 
-      it('rejects sum', async() => {
-        await expect(actor.test({
+      it('rejects sum', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('sum', false),
-        })).rejects.toThrow(exception);
+        })).rejects.toThrow();
       });
     });
 
-    it('should run', async() => {
-      await expect(actor.run({
+    it('should run', () => {
+      return expect(actor.run({
         context,
         expr: makeAggregate('sample', false),
       })).resolves.toMatchObject({});

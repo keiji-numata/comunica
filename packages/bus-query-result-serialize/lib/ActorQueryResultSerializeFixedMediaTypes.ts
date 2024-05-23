@@ -2,11 +2,8 @@ import type { IActorArgsMediaTypedFixed } from '@comunica/actor-abstract-mediaty
 import { ActorAbstractMediaTypedFixed } from '@comunica/actor-abstract-mediatyped';
 import type { IActorTest } from '@comunica/core';
 import type { IActionContext } from '@comunica/types';
-import type {
-  IActionSparqlSerialize,
-  IActorQueryResultSerializeOutput,
-  ActorQueryResultSerialize,
-} from './ActorQueryResultSerialize';
+import type { IActionSparqlSerialize, IActorQueryResultSerializeOutput,
+  ActorQueryResultSerialize } from './ActorQueryResultSerialize';
 
 /**
  * A base actor for listening to SPARQL serialize events that has fixed media types.
@@ -19,10 +16,7 @@ import type {
  * @see IActionInit
  */
 export abstract class ActorQueryResultSerializeFixedMediaTypes extends ActorAbstractMediaTypedFixed<
-IActionSparqlSerialize,
-IActorTest,
-IActorQueryResultSerializeOutput
->
+IActionSparqlSerialize, IActorTest, IActorQueryResultSerializeOutput>
   implements IActorQueryResultSerializeFixedMediaTypesArgs, ActorQueryResultSerialize {
   /* eslint-disable max-len */
   /**
@@ -34,7 +28,7 @@ IActorQueryResultSerializeOutput
   }
   /* eslint-enable max-len */
 
-  public async testHandleChecked(_action: IActionSparqlSerialize, _context: IActionContext): Promise<boolean> {
+  public async testHandleChecked(action: IActionSparqlSerialize, context: IActionContext): Promise<boolean> {
     return true;
   }
 }

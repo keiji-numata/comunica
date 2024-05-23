@@ -57,11 +57,6 @@ bindingsStream.on('error', (error) => {
   console.error(error);
 });
 
-// Consume results as async iterable (easier)
-for await (const binding of bindingsStream) {
-  console.log(binding.toString());
-}
-
 // Consume results as an array (easier)
 const bindings = await bindingsStream.toArray();
 console.log(bindings[0].get('s').value);
@@ -84,7 +79,7 @@ const myEngine = new QueryEngine();
 const query = `
 PREFIX dc: <http://purl.org/dc/elements/1.1/>
 INSERT DATA
-{
+{ 
   <http://example/book1> dc:title "A new book" ;
                          dc:creator "A.N.Other" .
 }

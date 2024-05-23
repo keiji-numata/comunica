@@ -1,8 +1,5 @@
-import type {
-  IActionSparqlSerialize,
-  IActorQueryResultSerializeFixedMediaTypesArgs,
-  IActorQueryResultSerializeOutput,
-} from '@comunica/bus-query-result-serialize';
+import type { IActionSparqlSerialize, IActorQueryResultSerializeFixedMediaTypesArgs,
+  IActorQueryResultSerializeOutput } from '@comunica/bus-query-result-serialize';
 import {
   ActorQueryResultSerializeFixedMediaTypes,
 } from '@comunica/bus-query-result-serialize';
@@ -48,7 +45,7 @@ export class ActorQueryResultSerializeSparqlCsv extends ActorQueryResultSerializ
       let object = ActorQueryResultSerializeSparqlCsv.bindingToCsvBindings(value.object);
       if (value.object.termType === 'Literal') {
         // If object is a literal, it must be put in quotes, and internal quotes must be escaped
-        object = `"${object.replaceAll('"', '""')}"`;
+        object = `"${object.replace(/"/ug, '""')}"`;
       }
       stringValue = `<< ${ActorQueryResultSerializeSparqlCsv.bindingToCsvBindings(value.subject)} ${ActorQueryResultSerializeSparqlCsv.bindingToCsvBindings(value.predicate)} ${object} >>`;
     } else {
@@ -58,20 +55,20 @@ export class ActorQueryResultSerializeSparqlCsv extends ActorQueryResultSerializ
     // If a value contains certain characters, put it between double quotes
     if (/[",\n\r]/u.test(stringValue)) {
       // Within quote strings, " is written using a pair of quotation marks "".
-      stringValue = `"${stringValue.replaceAll('"', '""')}"`;
+      stringValue = `"${stringValue.replace(/"/ug, '""')}"`;
     }
 
     return stringValue;
   }
 
-  public override async testHandleChecked(action: IActionSparqlSerialize, _context: IActionContext): Promise<boolean> {
+  public async testHandleChecked(action: IActionSparqlSerialize, context: IActionContext): Promise<boolean> {
     if (action.type !== 'bindings') {
       throw new Error('This actor can only handle bindings streams.');
     }
     return true;
   }
 
-  public async runHandle(action: IActionSparqlSerialize, _mediaType: string | undefined, _context: IActionContext):
+  public async runHandle(action: IActionSparqlSerialize, mediaType: string | undefined, context: IActionContext):
   Promise<IActorQueryResultSerializeOutput> {
     const bindingsAction = <IQueryOperationResultBindings> action;
 

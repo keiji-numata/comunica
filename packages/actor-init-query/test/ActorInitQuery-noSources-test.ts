@@ -1,59 +1,66 @@
-import type { MediatorQueryProcess } from '@comunica/bus-query-process';
-import { KeysInitQuery } from '@comunica/context-entries';
+import {
+  KeysCore,
+  KeysInitQuery,
+  KeysRdfResolveQuadPattern,
+} from '@comunica/context-entries';
 import { ActionContext, Bus } from '@comunica/core';
 import { LoggerPretty } from '@comunica/logger-pretty';
-import type { IActionContext } from '@comunica/types';
+import type { IActionContext, IPhysicalQueryPlanLogger } from '@comunica/types';
+import { DataFactory } from 'rdf-data-factory';
 import { PassThrough, Readable, Transform } from 'readable-stream';
+import { Factory } from 'sparqlalgebrajs';
+import * as stringifyStream from 'stream-to-string';
 import { ActorInitQuery } from '../lib/ActorInitQuery';
 import { QueryEngineBase } from '../lib/QueryEngineBase';
 
-// Use require instead of import for default exports, to be compatible with variants of esModuleInterop in tsconfig.
-const stringifyStream = require('stream-to-string');
+const DF = new DataFactory();
 
 describe('ActorInitQuery', () => {
   let bus: any;
-  let mediatorQueryProcess: MediatorQueryProcess;
+  let logger: any;
+  let mediatorOptimizeQueryOperation: any;
+  let mediatorQueryOperation: any;
+  let mediatorSparqlParse: any;
   let mediatorSparqlSerialize: any;
   let mediatorHttpInvalidate: any;
   let context: IActionContext;
   let input: Readable;
 
+  const mediatorContextPreprocess: any = {
+    mediate: (action: any) => Promise.resolve(action),
+  };
+  const contextKeyShortcuts = {
+    initialBindings: '@comunica/actor-init-query:initialBindings',
+    log: '@comunica/core:log',
+    queryFormat: '@comunica/actor-init-query:queryFormat',
+    source: '@comunica/bus-rdf-resolve-quad-pattern:source',
+    sources: '@comunica/bus-rdf-resolve-quad-pattern:sources',
+  };
   const defaultQueryInputFormat = 'sparql';
   const sourceHypermedia = 'http://example.org/';
   const queryString = 'SELECT * WHERE { ?s ?p ?o } LIMIT 100';
 
   beforeEach(() => {
     bus = new Bus({ name: 'bus' });
-    mediatorQueryProcess = <any>{
-      mediate: jest.fn((action: any) => {
-        if (action.context.has(KeysInitQuery.explain)) {
-          return Promise.resolve({
-            result: {
-              explain: 'true',
-              data: 'EXPLAINED',
-            },
-          });
-        }
-        return action.query === 'INVALID' ?
-          Promise.reject(new Error('Invalid query')) :
-          Promise.resolve({
-            result: { type: 'bindings', bindingsStream: input, metadata: () => ({}), context: action.context },
-          });
-      }),
+    logger = null;
+    mediatorOptimizeQueryOperation = {
+      mediate: (arg: any) => Promise.resolve(arg),
     };
+    mediatorQueryOperation = {};
+    mediatorSparqlParse = {};
     mediatorSparqlSerialize = {
       mediate(arg: any) {
         return Promise.resolve(arg.mediaTypes ?
-            { mediaTypes: arg } :
-            {
-              handle: {
-                data: arg.handle.bindingsStream
-                  .pipe(new Transform({
-                    objectMode: true,
-                    transform: (e: any, enc: any, cb: any) => cb(null, JSON.stringify(e)),
-                  })),
-              },
-            });
+          { mediaTypes: arg } :
+          {
+            handle: {
+              data: arg.handle.bindingsStream
+                .pipe(new Transform({
+                  objectMode: true,
+                  transform: (e: any, enc: any, cb: any) => cb(null, JSON.stringify(e)),
+                })),
+            },
+          });
       },
     };
     mediatorHttpInvalidate = {
@@ -73,12 +80,50 @@ describe('ActorInitQuery', () => {
     let actorAllowNoSources: ActorInitQuery;
     let spyResultToString: any;
     let spyQueryOrExplain: any;
+
     beforeEach(() => {
+      const factory = new Factory();
+      mediatorQueryOperation.mediate = jest.fn((action: any) => {
+        if (action.context.has(KeysInitQuery.physicalQueryPlanLogger)) {
+          (<IPhysicalQueryPlanLogger> action.context.get(KeysInitQuery.physicalQueryPlanLogger))
+            .logOperation(
+              'logicalOp',
+              'physicalOp',
+              {},
+              undefined,
+              'actor',
+              {},
+            );
+        }
+        return action.operation !== 'INVALID' ?
+          Promise.resolve({ type: 'bindings', bindingsStream: input, metadata: () => ({}) }) :
+          Promise.reject(new Error('Invalid query'));
+      });
+      mediatorSparqlParse.mediate = (action: any) => action.query === 'INVALID' ?
+        Promise.resolve({ operation: action.query }) :
+        Promise.resolve({
+          baseIRI: action.query.includes('BASE') ? 'myBaseIRI' : null,
+          operation: factory.createProject(
+            factory.createBgp([
+              factory.createPattern(DF.variable('s'), DF.variable('p'), DF.variable('o')),
+            ]),
+            [
+              DF.variable('s'),
+              DF.variable('p'),
+              DF.variable('o'),
+            ],
+          ),
+        });
       actorAllowNoSources = new ActorInitQuery({
         bus,
+        contextKeyShortcuts,
         defaultQueryInputFormat,
+        logger,
+        mediatorContextPreprocess,
         mediatorHttpInvalidate,
-        mediatorQueryProcess,
+        mediatorOptimizeQueryOperation,
+        mediatorQueryOperation,
+        mediatorQueryParse: mediatorSparqlParse,
         mediatorQueryResultSerialize: mediatorSparqlSerialize,
         mediatorQueryResultSerializeMediaTypeCombiner: mediatorSparqlSerialize,
         mediatorQueryResultSerializeMediaTypeFormatCombiner: mediatorSparqlSerialize,
@@ -101,8 +146,8 @@ describe('ActorInitQuery', () => {
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          sources: [{ value: 'SOURCE' }],
-          log: expect.any(LoggerPretty),
+          [KeysRdfResolveQuadPattern.sources.name]: [{ value: 'SOURCE' }],
+          [KeysCore.log.name]: expect.any(LoggerPretty),
         });
       });
 
@@ -116,7 +161,7 @@ describe('ActorInitQuery', () => {
         expect(stdout).toContain(`{"a":"triple"}`);
         expect(spyQueryOrExplain).toHaveBeenCalledWith(queryString, {
           [KeysInitQuery.queryFormat.name]: { language: 'sparql', version: '1.1' },
-          log: expect.any(LoggerPretty),
+          [KeysCore.log.name]: expect.any(LoggerPretty),
         });
       });
 

@@ -26,41 +26,41 @@ describe('ActorRdfMetadataAccumulateCanContainUndefs', () => {
 
     describe('run', () => {
       it('should handle initialization', async() => {
-        await expect(actor.run({ context, mode: 'initialize' })).resolves
+        expect(await actor.run({ context, mode: 'initialize' }))
           .toEqual({ metadata: { canContainUndefs: false }});
       });
 
       it('should handle appending with two false entries', async() => {
-        await expect(actor.run({
+        expect(await actor.run({
           context,
           mode: 'append',
           accumulatedMetadata: <any> { canContainUndefs: false },
           appendingMetadata: <any> { canContainUndefs: false },
-        })).resolves.toEqual({ metadata: { canContainUndefs: false }});
+        })).toEqual({ metadata: { canContainUndefs: false }});
       });
 
       it('should handle appending with one true entry', async() => {
-        await expect(actor.run({
+        expect(await actor.run({
           context,
           mode: 'append',
           accumulatedMetadata: <any> { canContainUndefs: true },
           appendingMetadata: <any> { canContainUndefs: false },
-        })).resolves.toEqual({ metadata: { canContainUndefs: true }});
-        await expect(actor.run({
+        })).toEqual({ metadata: { canContainUndefs: true }});
+        expect(await actor.run({
           context,
           mode: 'append',
           accumulatedMetadata: <any> { canContainUndefs: false },
           appendingMetadata: <any> { canContainUndefs: true },
-        })).resolves.toEqual({ metadata: { canContainUndefs: true }});
+        })).toEqual({ metadata: { canContainUndefs: true }});
       });
 
       it('should handle appending with two true entries', async() => {
-        await expect(actor.run({
+        expect(await actor.run({
           context,
           mode: 'append',
           accumulatedMetadata: <any> { canContainUndefs: true },
           appendingMetadata: <any> { canContainUndefs: true },
-        })).resolves.toEqual({ metadata: { canContainUndefs: true }});
+        })).toEqual({ metadata: { canContainUndefs: true }});
       });
     });
   });

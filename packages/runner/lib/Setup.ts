@@ -27,11 +27,8 @@ const process: NodeJS.Process = require('process/');
  * @param {ISetupProperties} properties Properties to pass to the Components.js manager.
  * @return {Promise<any>}               A promise that resolves to the instance.
  */
-export async function instantiateComponent(
-  configResourceUrl: string,
-  instanceUri: string,
-  properties?: ISetupProperties,
-): Promise<any> {
+export async function instantiateComponent(configResourceUrl: string, instanceUri: string,
+  properties?: ISetupProperties): Promise<any> {
   // Handle optional arguments
   if (!properties) {
     properties = {};
@@ -54,12 +51,8 @@ export async function instantiateComponent(
  * @param {ISetupProperties} properties Properties to pass to the Components.js loader.
  * @return {Promise<any>}               A promise that resolves when the runner has been initialized.
  */
-export async function run(
-  configResourceUrl: string,
-  action: IActionInit,
-  runnerUri?: string,
-  properties?: ISetupProperties,
-): Promise<any> {
+export async function run(configResourceUrl: string, action: IActionInit, runnerUri?: string,
+  properties?: ISetupProperties): Promise<any> {
   if (!runnerUri) {
     runnerUri = 'urn:comunica:default:Runner';
   }

@@ -1,4 +1,4 @@
-name: CI
+name: "CI"
 on: [push, pull_request]
 
 concurrency:
@@ -13,6 +13,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         node-version:
+          - 16.x
           - 18.x
           - 20.x
     steps:
@@ -35,13 +36,11 @@ jobs:
       - name: Setup firefox
         uses: browser-actions/setup-firefox@latest
         with:
-          firefox-version: latest
+          firefox-version: 'latest'
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - name: Build project
         run: yarn run build
-      - name: Build project -- esModuleInterop true
-        run: yarn run build:ts --esModuleInterop true
       - name: Run depcheck
         run: yarn run depcheck
       - name: Run tests
@@ -79,7 +78,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: '16.x'
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Load cache
@@ -101,7 +100,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: '16.x'
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Load cache
@@ -128,7 +127,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: '16.x'
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Load cache
@@ -155,7 +154,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: '16.x'
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Load cache

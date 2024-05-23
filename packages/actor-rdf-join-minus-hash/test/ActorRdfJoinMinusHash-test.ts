@@ -24,10 +24,7 @@ describe('ActorRdfJoinMinusHash', () => {
   describe('An ActorRdfJoinMinusHash instance', () => {
     let mediatorJoinSelectivity: Mediator<
     Actor<IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>,
-    IActionRdfJoinSelectivity,
-IActorTest,
-IActorRdfJoinSelectivityOutput
->;
+    IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>;
     let actor: ActorRdfJoinMinusHash;
 
     beforeEach(() => {
@@ -92,11 +89,11 @@ IActorRdfJoinSelectivityOutput
             },
           ],
           context,
-        })).rejects.toThrow('Actor actor can not join streams containing undefs');
+        })).rejects.toThrowError('Actor actor can not join streams containing undefs');
       });
 
       it('should test on two entries', async() => {
-        await expect(actor.test({
+        expect(await actor.test({
           type: 'minus',
           entries: <any> [
             {
@@ -123,7 +120,7 @@ IActorRdfJoinSelectivityOutput
             },
           ],
           context,
-        })).resolves.toEqual({
+        })).toEqual({
           iterations: 8,
           blockingItems: 4,
           persistedItems: 4,
@@ -174,8 +171,8 @@ IActorRdfJoinSelectivityOutput
         const { result } = await actor.getOutput(action);
 
         // Validate output
-        expect(result.type).toBe('bindings');
-        await expect(result.metadata()).resolves
+        expect(result.type).toEqual('bindings');
+        expect(await result.metadata())
           .toEqual({ cardinality: 3, canContainUndefs: false, variables: [ DF.variable('a') ]});
         await expect(result.bindingsStream).toEqualBindingsStream([
           BF.bindings([[ DF.variable('a'), DF.literal('3') ]]),
@@ -223,8 +220,8 @@ IActorRdfJoinSelectivityOutput
         const { result } = await actor.getOutput(action);
 
         // Validate output
-        expect(result.type).toBe('bindings');
-        await expect(result.metadata()).resolves
+        expect(result.type).toEqual('bindings');
+        expect(await result.metadata())
           .toEqual({ cardinality: 3, canContainUndefs: false, variables: [ DF.variable('a') ]});
         await expect(result.bindingsStream).toEqualBindingsStream([
           BF.bindings([[ DF.variable('a'), DF.literal('1') ]]),

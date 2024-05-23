@@ -69,7 +69,7 @@ describe('ActorQueryOperationPathSeq', () => {
           }
         }
 
-        return {
+        return Promise.resolve({
           bindingsStream: new ArrayIterator(bindings),
           metadata: async() => ({
             cardinality: 3,
@@ -81,7 +81,7 @@ describe('ActorQueryOperationPathSeq', () => {
           }),
           operated: arg,
           type: 'bindings',
-        };
+        });
       },
     };
   });
@@ -99,9 +99,7 @@ describe('ActorQueryOperationPathSeq', () => {
     });
 
     it('should not be able to create new ActorQueryOperationPathSeq objects without \'new\'', () => {
-      expect(() => {
-        (<any> ActorQueryOperationPathSeq)();
-      }).toThrow(`Class constructor ActorQueryOperationPathSeq cannot be invoked without 'new'`);
+      expect(() => { (<any> ActorQueryOperationPathSeq)(); }).toThrow();
     });
   });
 
@@ -112,14 +110,14 @@ describe('ActorQueryOperationPathSeq', () => {
       actor = new ActorQueryOperationPathSeq({ name: 'actor', bus, mediatorQueryOperation, mediatorJoin });
     });
 
-    it('should test on Seq paths', async() => {
+    it('should test on Seq paths', () => {
       const op: any = { operation: { type: Algebra.types.PATH, predicate: { type: Algebra.types.SEQ }}};
-      await expect(actor.test(op)).resolves.toBeTruthy();
+      return expect(actor.test(op)).resolves.toBeTruthy();
     });
 
-    it('should test on different paths', async() => {
+    it('should test on different paths', () => {
       const op: any = { operation: { type: Algebra.types.PATH, predicate: { type: 'dummy' }}};
-      await expect(actor.test(op)).rejects.toBeTruthy();
+      return expect(actor.test(op)).rejects.toBeTruthy();
     });
 
     it('should support Seq paths', async() => {
@@ -130,9 +128,10 @@ describe('ActorQueryOperationPathSeq', () => {
           factory.createLink(DF.namedNode('p2')),
         ]),
         DF.variable('x'),
-      ), context: new ActionContext() };
+      ),
+      context: new ActionContext() };
       const output = ActorQueryOperation.getSafeBindings(await actor.run(op));
-      await expect(output.metadata()).resolves.toEqual({
+      expect(await output.metadata()).toEqual({
         cardinality: 3,
         canContainUndefs: false,
         variables: [ DF.variable('x') ],
@@ -174,7 +173,7 @@ describe('ActorQueryOperationPathSeq', () => {
         context: new ActionContext(),
       };
       const output = ActorQueryOperation.getSafeBindings(await actor.run(op));
-      await expect(output.metadata()).resolves.toEqual({
+      expect(await output.metadata()).toEqual({
         cardinality: 3,
         canContainUndefs: false,
         variables: [ DF.variable('x') ],

@@ -37,13 +37,11 @@ export class MediatorNumber<A extends Actor<I, T, O>, I extends IAction, T exten
           return val !== null && (Number.isNaN(prev[0]) || prev[0] < val) ? [ val, i ] : prev;
         }, [ Number.NaN, -1 ])[1];
       default:
-        // eslint-disable-next-line ts/restrict-template-expressions
         throw new Error(`No valid "type" value was given, must be either 'min' or 'max', but got: ${this.type}`);
     }
   }
 
   protected getOrDefault(value: number | undefined, defaultValue: number): number {
-    // eslint-disable-next-line ts/prefer-nullish-coalescing
     return value === undefined ? defaultValue : value;
   }
 
@@ -53,8 +51,7 @@ export class MediatorNumber<A extends Actor<I, T, O>, I extends IAction, T exten
     if (this.ignoreErrors) {
       const dummy: any = {};
       dummy[this.field] = null;
-      // eslint-disable-next-line ts/no-floating-promises
-      promises = promises.map(promise => promise.catch((error) => {
+      promises = promises.map(promise => promise.catch(error => {
         errors.push(error);
         return dummy;
       }));
@@ -69,13 +66,8 @@ export class MediatorNumber<A extends Actor<I, T, O>, I extends IAction, T exten
   }
 }
 
-export interface IMediatorNumberArgs<
-  A extends Actor<I, T, O>,
-I extends IAction,
-T extends IActorTest,
-O extends IActorOutput,
->
-  extends IMediatorArgs<A, I, T, O> {
+export interface IMediatorNumberArgs<A extends Actor<I, T, O>, I extends IAction, T extends IActorTest,
+  O extends IActorOutput> extends IMediatorArgs<A, I, T, O> {
   /**
    * The field name of the test result field over which must be mediated.
    */

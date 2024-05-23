@@ -1,4 +1,3 @@
-/* eslint-disable node/no-path-concat */
 import { QueryEngineFactoryBase } from '@comunica/actor-init-query';
 import { QueryEngine } from './QueryEngine';
 

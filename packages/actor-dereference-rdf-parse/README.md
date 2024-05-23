@@ -15,6 +15,7 @@ and should only be used by [developers that want to build their own query engine
 $ yarn add @comunica/actor-dereference-rdf-parse
 ```
 
+
 ## Configure
 
 After installing, this package can be added to your engine's configuration as follows:
@@ -22,7 +23,7 @@ After installing, this package can be added to your engine's configuration as fo
 {
   "@context": [
     ...
-    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-dereference-rdf-parse/^3.0.0/components/context.jsonld"
+    "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-dereference-rdf-parse/^2.0.0/components/context.jsonld"  
   ],
   "actors": [
     ...

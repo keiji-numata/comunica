@@ -1,4 +1,4 @@
-import { Readable } from 'node:stream';
+import { Readable } from 'stream';
 import { ActionContext, Bus } from '@comunica/core';
 import type { IActionContext } from '@comunica/types';
 import { ArrayIterator } from 'asynciterator';
@@ -28,9 +28,7 @@ describe('ActorRdfSerializeJsonLd', () => {
     });
 
     it('should not be able to create new ActorRdfSerializeJsonLd objects without \'new\'', () => {
-      expect(() => {
-        (<any> ActorRdfSerializeJsonLd)();
-      }).toThrow(`Class constructor ActorRdfSerializeJsonLd cannot be invoked without 'new'`);
+      expect(() => { (<any> ActorRdfSerializeJsonLd)(); }).toThrow();
     });
   });
 
@@ -41,10 +39,14 @@ describe('ActorRdfSerializeJsonLd', () => {
     let quadStreamQuoted: any;
 
     beforeEach(() => {
-      actor = new ActorRdfSerializeJsonLd({ bus, jsonStringifyIndentSpaces: 2, mediaTypePriorities: {
-        'application/json': 1,
-        'application/ld+json': 1,
-      }, mediaTypeFormats: {}, name: 'actor' });
+      actor = new ActorRdfSerializeJsonLd({ bus,
+        jsonStringifyIndentSpaces: 2,
+        mediaTypePriorities: {
+          'application/json': 1,
+          'application/ld+json': 1,
+        },
+        mediaTypeFormats: {},
+        name: 'actor' });
     });
 
     describe('for serializing', () => {
@@ -63,12 +65,14 @@ describe('ActorRdfSerializeJsonLd', () => {
         ]);
       });
 
-      it('should run', async() => {
-        await actor.run({ handle: {
+      it('should run', () => {
+        return actor.run({ handle: {
           quadStream: quadStream(),
           context,
-        }, handleMediaType: 'application/ld+json', context })
-          .then(async(output: any) => await expect(stringifyStream(output.handle.data)).resolves.toBe(
+        },
+        handleMediaType: 'application/ld+json',
+        context })
+          .then(async(output: any) => expect(await stringifyStream(output.handle.data)).toEqual(
             `[
   {
     "@id": "http://example.org/a",
@@ -89,13 +93,13 @@ describe('ActorRdfSerializeJsonLd', () => {
       });
     });
 
-    it('should run on a pipeable stream', async() => {
-      await actor.run({
+    it('should run on a pipeable stream', () => {
+      return actor.run({
         handle: { quadStream: quadStreamPipeable(), context },
         handleMediaType: 'application/ld+json',
         context,
       })
-        .then(async(output: any) => await expect(stringifyStream(output.handle.data)).resolves.toBe(
+        .then(async(output: any) => expect(await stringifyStream(output.handle.data)).toEqual(
           `[
   {
     "@id": "http://example.org/a",
@@ -115,8 +119,8 @@ describe('ActorRdfSerializeJsonLd', () => {
         ));
     });
 
-    it('should run on quoted triples', async() => {
-      await actor.run({
+    it('should run on quoted triples', () => {
+      return actor.run({
         handle: {
           quadStream: quadStreamQuoted(),
           context,
@@ -124,7 +128,7 @@ describe('ActorRdfSerializeJsonLd', () => {
         handleMediaType: 'application/ld+json',
         context,
       })
-        .then(async(output: any) => await expect(stringifyStream(output.handle.data)).resolves.toBe(
+        .then(async(output: any) => expect(await stringifyStream(output.handle.data)).toEqual(
           `[
   {
     "@id": {
@@ -151,15 +155,18 @@ describe('ActorRdfSerializeJsonLd', () => {
         ));
     });
 
-    it('should run with multiple array entries', async() => {
-      await actor.run({ handle: { quadStream: new ArrayIterator([
+    it('should run with multiple array entries', () => {
+      return actor.run({ handle: { quadStream: new ArrayIterator([
         quad('http://example.org/a', 'http://example.org/b', 'http://example.org/c'),
         quad('http://example.org/a', 'http://example.org/d', 'http://example.org/e'),
 
         quad('http://example.org/a2', 'http://example.org/b', 'http://example.org/c'),
         quad('http://example.org/a2', 'http://example.org/d', 'http://example.org/e'),
-      ]), context }, handleMediaType: 'application/ld+json', context })
-        .then(async(output: any) => await expect(stringifyStream(output.handle.data)).resolves.toBe(
+      ]),
+      context },
+      handleMediaType: 'application/ld+json',
+      context })
+        .then(async(output: any) => expect(await stringifyStream(output.handle.data)).toEqual(
           `[
   {
     "@id": "http://example.org/a",
@@ -199,10 +206,14 @@ describe('ActorRdfSerializeJsonLd', () => {
     let quadsError: any;
 
     beforeEach(() => {
-      actor = new ActorRdfSerializeJsonLd({ bus, jsonStringifyIndentSpaces: 0, mediaTypePriorities: {
-        'application/json': 1,
-        'application/ld+json': 1,
-      }, mediaTypeFormats: {}, name: 'actor' });
+      actor = new ActorRdfSerializeJsonLd({ bus,
+        jsonStringifyIndentSpaces: 0,
+        mediaTypePriorities: {
+          'application/json': 1,
+          'application/ld+json': 1,
+        },
+        mediaTypeFormats: {},
+        name: 'actor' });
     });
 
     describe('for serializing', () => {
@@ -220,13 +231,13 @@ describe('ActorRdfSerializeJsonLd', () => {
           quadStream.destroy();
         });
 
-        it('should test on application/json', async() => {
-          await expect(actor.test({ handle: { quadStream, context }, handleMediaType: 'application/json', context }))
+        it('should test on application/json', () => {
+          return expect(actor.test({ handle: { quadStream, context }, handleMediaType: 'application/json', context }))
             .resolves.toBeTruthy();
         });
 
-        it('should test on application/ld+json', async() => {
-          await expect(actor.test({
+        it('should test on application/ld+json', () => {
+          return expect(actor.test({
             handle: { quadStream, context },
             handleMediaType: 'application/ld+json',
             context,
@@ -234,8 +245,8 @@ describe('ActorRdfSerializeJsonLd', () => {
             .resolves.toBeTruthy();
         });
 
-        it('should not test on N-Triples', async() => {
-          await expect(actor.test({
+        it('should not test on N-Triples', () => {
+          return expect(actor.test({
             handle: { quadStream, context },
             handleMediaType: 'application/n-triples',
             context,
@@ -244,9 +255,9 @@ describe('ActorRdfSerializeJsonLd', () => {
         });
       });
 
-      it('should run', async() => {
-        await actor.run({ handle: { quadStream, context }, handleMediaType: 'application/ld+json', context })
-          .then(async(output: any) => await expect(stringifyStream(output.handle.data)).resolves.toEqual('[{"@id":' +
+      it('should run', () => {
+        return actor.run({ handle: { quadStream, context }, handleMediaType: 'application/ld+json', context })
+          .then(async(output: any) => expect(await stringifyStream(output.handle.data)).toEqual('[{"@id":' +
             '"http://example.org/a","http://example.org/b":[{"@id":"http://example.org/c"}],"http://example.org/d":' +
             '[{"@id":"http://example.org/e"}]}]'));
       });
@@ -263,34 +274,44 @@ describe('ActorRdfSerializeJsonLd', () => {
     });
 
     describe('for getting media types', () => {
-      it('should test', async() => {
-        await expect(actor.test({ mediaTypes: true, context })).resolves.toBeTruthy();
+      it('should test', () => {
+        return expect(actor.test({ mediaTypes: true, context })).resolves.toBeTruthy();
       });
 
-      it('should run', async() => {
-        await expect(actor.run({ mediaTypes: true, context })).resolves.toEqual({ mediaTypes: {
+      it('should run', () => {
+        return expect(actor.run({ mediaTypes: true, context })).resolves.toEqual({ mediaTypes: {
           'application/json': 1,
           'application/ld+json': 1,
         }});
       });
 
-      it('should run with scaled priorities 0.5', async() => {
-        actor = new ActorRdfSerializeJsonLd({ bus, jsonStringifyIndentSpaces: 2, mediaTypePriorities: {
-          'application/json': 1,
-          'application/ld+json': 1,
-        }, mediaTypeFormats: {}, name: 'actor', priorityScale: 0.5 });
-        await expect(actor.run({ mediaTypes: true, context })).resolves.toEqual({ mediaTypes: {
+      it('should run with scaled priorities 0.5', () => {
+        actor = new ActorRdfSerializeJsonLd({ bus,
+          jsonStringifyIndentSpaces: 2,
+          mediaTypePriorities: {
+            'application/json': 1,
+            'application/ld+json': 1,
+          },
+          mediaTypeFormats: {},
+          name: 'actor',
+          priorityScale: 0.5 });
+        return expect(actor.run({ mediaTypes: true, context })).resolves.toEqual({ mediaTypes: {
           'application/json': 0.5,
           'application/ld+json': 0.5,
         }});
       });
 
-      it('should run with scaled priorities 0', async() => {
-        actor = new ActorRdfSerializeJsonLd({ bus, jsonStringifyIndentSpaces: 2, mediaTypePriorities: {
-          'application/json': 1,
-          'application/ld+json': 1,
-        }, mediaTypeFormats: {}, name: 'actor', priorityScale: 0 });
-        await expect(actor.run({ mediaTypes: true, context })).resolves.toEqual({ mediaTypes: {
+      it('should run with scaled priorities 0', () => {
+        actor = new ActorRdfSerializeJsonLd({ bus,
+          jsonStringifyIndentSpaces: 2,
+          mediaTypePriorities: {
+            'application/json': 1,
+            'application/ld+json': 1,
+          },
+          mediaTypeFormats: {},
+          name: 'actor',
+          priorityScale: 0 });
+        return expect(actor.run({ mediaTypes: true, context })).resolves.toEqual({ mediaTypes: {
           'application/json': 0,
           'application/ld+json': 0,
         }});

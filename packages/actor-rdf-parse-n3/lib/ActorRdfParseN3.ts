@@ -1,4 +1,5 @@
-import type { IActionRdfParse, IActorRdfParseFixedMediaTypesArgs, IActorRdfParseOutput } from '@comunica/bus-rdf-parse';
+import type { IActionRdfParse, IActorRdfParseFixedMediaTypesArgs,
+  IActorRdfParseOutput } from '@comunica/bus-rdf-parse';
 import { ActorRdfParseFixedMediaTypes } from '@comunica/bus-rdf-parse';
 import type { IActionContext } from '@comunica/types';
 import { StreamParser } from 'n3';
@@ -31,7 +32,7 @@ export class ActorRdfParseN3 extends ActorRdfParseFixedMediaTypes {
     super(args);
   }
 
-  public async runHandle(action: IActionRdfParse, mediaType: string, _context: IActionContext):
+  public async runHandle(action: IActionRdfParse, mediaType: string, context: IActionContext):
   Promise<IActorRdfParseOutput> {
     action.data.on('error', error => data.emit('error', error));
     const data = <Readable><any>action.data.pipe(new StreamParser({

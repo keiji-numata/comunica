@@ -2,7 +2,6 @@ import { QueryEngineBase } from '@comunica/actor-init-query';
 import type { ActorInitQueryBase } from '@comunica/actor-init-query';
 import type { IQueryContextCommon } from '@comunica/types';
 
-// eslint-disable-next-line import/extensions,ts/no-require-imports,ts/no-var-requires
 const engineDefault = require('../engine-default.js');
 
 /**
@@ -10,7 +9,7 @@ const engineDefault = require('../engine-default.js');
  */
 export class QueryEngine<QueryContext extends IQueryContextCommon = IQueryContextCommon>
   extends QueryEngineBase<QueryContext> {
-  public constructor(engine: ActorInitQueryBase = engineDefault()) {
+  public constructor(engine: ActorInitQueryBase<QueryContext> = engineDefault) {
     super(engine);
   }
 }

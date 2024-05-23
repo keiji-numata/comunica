@@ -1,13 +1,9 @@
-import type {
-  IActionSparqlSerialize,
+import type { IActionSparqlSerialize,
   IActorQueryResultSerializeFixedMediaTypesArgs,
-  IActorQueryResultSerializeOutput,
-} from '@comunica/bus-query-result-serialize';
+  IActorQueryResultSerializeOutput } from '@comunica/bus-query-result-serialize';
 import { ActorQueryResultSerializeFixedMediaTypes } from '@comunica/bus-query-result-serialize';
 import type {
-  IActionContext,
-  IQueryOperationResultBindings,
-  IQueryOperationResultBoolean,
+  IActionContext, IQueryOperationResultBindings, IQueryOperationResultBoolean,
   IQueryOperationResultQuads,
 } from '@comunica/types';
 import type * as RDF from '@rdfjs/types';
@@ -31,14 +27,14 @@ export class ActorQueryResultSerializeJson extends ActorQueryResultSerializeFixe
     super(args);
   }
 
-  public override async testHandleChecked(action: IActionSparqlSerialize, _context: IActionContext): Promise<boolean> {
+  public async testHandleChecked(action: IActionSparqlSerialize, context: IActionContext): Promise<boolean> {
     if (![ 'bindings', 'quads', 'boolean' ].includes(action.type)) {
       throw new Error('This actor can only handle bindings or quad streams.');
     }
     return true;
   }
 
-  public async runHandle(action: IActionSparqlSerialize, _mediaType: string, _context: IActionContext):
+  public async runHandle(action: IActionSparqlSerialize, mediaType: string, context: IActionContext):
   Promise<IActorQueryResultSerializeOutput> {
     const data = new Readable();
     data._read = () => {
@@ -64,7 +60,7 @@ export class ActorQueryResultSerializeJson extends ActorQueryResultSerializeFixe
       const resultStream = (<IQueryOperationResultQuads> action).quadStream;
       data.push('[');
       resultStream.on('error', error => data.emit('error', error));
-      resultStream.on('data', (element) => {
+      resultStream.on('data', element => {
         data.push(empty ? '\n' : ',\n');
         data.push(JSON.stringify(RdfString.quadToStringQuad(element)));
         empty = false;

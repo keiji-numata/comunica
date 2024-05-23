@@ -1,4 +1,4 @@
-import { type Readable, PassThrough } from 'node:stream';
+import { type Readable, PassThrough } from 'stream';
 import { KeysRdfParseHtmlScript } from '@comunica/context-entries';
 import { ActionContext, Bus } from '@comunica/core';
 import 'jest-rdf';
@@ -30,9 +30,7 @@ describe('ActorRdfParseShaclc', () => {
     });
 
     it('should not be able to create new ActorRdfParseShaclc objects without \'new\'', () => {
-      expect(() => {
-        (<any> ActorRdfParseShaclc)();
-      }).toThrow(`Class constructor ActorRdfParseShaclc cannot be invoked without 'new'`);
+      expect(() => { (<any> ActorRdfParseShaclc)(); }).toThrow();
     });
 
     it('when constructed with optional mediaTypePriorities should set the mediaTypePriorities', () => {
@@ -42,11 +40,9 @@ describe('ActorRdfParseShaclc', () => {
     });
 
     it('should not throw an error when constructed with optional priorityScale', () => {
-      expect(() => {
-        new ActorRdfParseShaclc(
-          { name: 'actor', bus, mediaTypePriorities: {}, mediaTypeFormats: {}, priorityScale: 0.5 },
-        );
-      })
+      expect(() => { new ActorRdfParseShaclc(
+        { name: 'actor', bus, mediaTypePriorities: {}, mediaTypeFormats: {}, priorityScale: 0.5 },
+      ); })
         .toBeTruthy();
     });
 
@@ -54,7 +50,7 @@ describe('ActorRdfParseShaclc', () => {
       expect(new ActorRdfParseShaclc(
         { name: 'actor', bus, mediaTypePriorities: {}, mediaTypeFormats: {}, priorityScale: 0.5 },
       ).priorityScale)
-        .toBe(0.5);
+        .toEqual(0.5);
     });
 
     it('when constructed with optional priorityScale should scale the priorities', () => {
@@ -83,10 +79,13 @@ describe('ActorRdfParseShaclc', () => {
     let inputSkipped: Readable;
 
     beforeEach(() => {
-      actor = new ActorRdfParseShaclc({ bus, mediaTypePriorities: {
-        'text/shaclc': 1,
-        'text/shaclc-ext': 0.5,
-      }, mediaTypeFormats: {}, name: 'actor' });
+      actor = new ActorRdfParseShaclc({ bus,
+        mediaTypePriorities: {
+          'text/shaclc': 1,
+          'text/shaclc-ext': 0.5,
+        },
+        mediaTypeFormats: {},
+        name: 'actor' });
       input = streamifyString(`BASE <http://example.org/basic-shape-iri>
       PREFIX ex: <http://example.org/ex#>
 
@@ -119,8 +118,8 @@ describe('ActorRdfParseShaclc', () => {
           .resolves.toBeTruthy();
       });
 
-      it('should not test on bla+json when processing html', async() => {
-        await expect(actor.test({
+      it('should not test on bla+json when processing html', () => {
+        return expect(actor.test({
           handle: { data: input, metadata: { baseIRI: '' }, context },
           handleMediaType: 'bla+json',
           context: new ActionContext({ [KeysRdfParseHtmlScript.processingHtmlScript.name]: true }),
@@ -161,11 +160,9 @@ describe('ActorRdfParseShaclc', () => {
         });
 
         const prefixes: Record<string, string> = {};
-        output.handle.data.on('prefix', (prefix: string, iri: string) => {
-          prefixes[prefix] = iri;
-        });
+        output.handle.data.on('prefix', (prefix: string, iri: string) => { prefixes[prefix] = iri; });
 
-        await expect(arrayifyStream(output.handle.data)).resolves.toEqualRdfQuadArray([
+        expect(await arrayifyStream(output.handle.data)).toEqualRdfQuadArray([
           quad(
             'http://example.org/test#TestShape',
             'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
@@ -200,11 +197,9 @@ describe('ActorRdfParseShaclc', () => {
       });
 
       const prefixes: Record<string, string> = {};
-      output.handle.data.on('prefix', (prefix: string, iri: string) => {
-        prefixes[prefix] = iri;
-      });
+      output.handle.data.on('prefix', (prefix: string, iri: string) => { prefixes[prefix] = iri; });
 
-      await expect(arrayifyStream(output.handle.data)).resolves.toEqualRdfQuadArray([
+      expect(await arrayifyStream(output.handle.data)).toEqualRdfQuadArray([
         quad(
           'https://www.jeswr.org/#TestShape',
           'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
@@ -219,31 +214,39 @@ describe('ActorRdfParseShaclc', () => {
     });
 
     describe('for getting media types', () => {
-      it('should test', async() => {
-        await expect(actor.test({ mediaTypes: true, context })).resolves.toBeTruthy();
+      it('should test', () => {
+        return expect(actor.test({ mediaTypes: true, context })).resolves.toBeTruthy();
       });
 
-      it('should run', async() => {
-        await expect(actor.run({ mediaTypes: true, context })).resolves.toEqual({ mediaTypes: {
+      it('should run', () => {
+        return expect(actor.run({ mediaTypes: true, context })).resolves.toEqual({ mediaTypes: {
           'text/shaclc': 1,
           'text/shaclc-ext': 0.5,
         }});
       });
 
-      it('should run with scaled priorities 0.5', async() => {
-        actor = new ActorRdfParseShaclc({ bus, mediaTypePriorities: {
-          'text/shaclc': 1,
-        }, mediaTypeFormats: {}, name: 'actor', priorityScale: 0.5 });
-        await expect(actor.run({ mediaTypes: true, context })).resolves.toEqual({ mediaTypes: {
+      it('should run with scaled priorities 0.5', () => {
+        actor = new ActorRdfParseShaclc({ bus,
+          mediaTypePriorities: {
+            'text/shaclc': 1,
+          },
+          mediaTypeFormats: {},
+          name: 'actor',
+          priorityScale: 0.5 });
+        return expect(actor.run({ mediaTypes: true, context })).resolves.toEqual({ mediaTypes: {
           'text/shaclc': 0.5,
         }});
       });
 
-      it('should run with scaled priorities 0', async() => {
-        actor = new ActorRdfParseShaclc({ bus, mediaTypePriorities: {
-          'text/shaclc': 1,
-        }, mediaTypeFormats: {}, name: 'actor', priorityScale: 0 });
-        await expect(actor.run({ mediaTypes: true, context })).resolves.toEqual({ mediaTypes: {
+      it('should run with scaled priorities 0', () => {
+        actor = new ActorRdfParseShaclc({ bus,
+          mediaTypePriorities: {
+            'text/shaclc': 1,
+          },
+          mediaTypeFormats: {},
+          name: 'actor',
+          priorityScale: 0 });
+        return expect(actor.run({ mediaTypes: true, context })).resolves.toEqual({ mediaTypes: {
           'text/shaclc': 0,
         }});
       });
@@ -262,7 +265,7 @@ describe('ActorRdfParseShaclc', () => {
             handleMediaType: 'text/shaclc-ext',
             context,
           });
-          await expect(arrayifyStream(output.handle.data)).resolves.toEqualRdfQuadArray([
+          expect(await arrayifyStream(output.handle.data)).toEqualRdfQuadArray([
             quad(
               'http://example.org/test#TestShape',
               'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
@@ -287,13 +290,12 @@ describe('ActorRdfParseShaclc', () => {
             handleMediaType: 'text/shaclc',
             context,
           });
-          await expect(() => arrayifyStream(output.handle.data))
-            .rejects.toThrow(`Encountered extended SHACLC syntax; but extended parsing is disabled`);
+          await expect(() => arrayifyStream(output.handle.data)).rejects.toThrowError();
         });
       });
 
-      it('should not have duplicate results on multiple read calls', async() => {
-        await actor.run({
+      it('should not have duplicate results on multiple read calls', () => {
+        return actor.run({
           handle: { data: input, metadata: { baseIRI: '' }, context },
           handleMediaType: 'text/shaclc',
           context,
@@ -301,7 +303,7 @@ describe('ActorRdfParseShaclc', () => {
           .then(async(output: any) => {
             output.handle.data.read();
             output.handle.data.read();
-            await expect(arrayifyStream(output.handle.data)).resolves.toEqualRdfQuadArray([
+            expect(await arrayifyStream(output.handle.data)).toEqualRdfQuadArray([
               quad(
                 'http://example.org/test#TestShape',
                 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
@@ -316,8 +318,8 @@ describe('ActorRdfParseShaclc', () => {
           });
       });
 
-      it('should not have duplicate results on multiple read calls (with no metadata)', async() => {
-        await actor.run({
+      it('should not have duplicate results on multiple read calls (with no metadata)', () => {
+        return actor.run({
           handle: { data: input, context },
           handleMediaType: 'text/shaclc',
           context,
@@ -325,7 +327,7 @@ describe('ActorRdfParseShaclc', () => {
           .then(async(output: any) => {
             output.handle.data.read();
             output.handle.data.read();
-            await expect(arrayifyStream(output.handle.data)).resolves.toEqualRdfQuadArray([
+            expect(await arrayifyStream(output.handle.data)).toEqualRdfQuadArray([
               quad(
                 'http://example.org/test#TestShape',
                 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
@@ -340,8 +342,8 @@ describe('ActorRdfParseShaclc', () => {
           });
       });
 
-      it('should be able to pipe data', async() => {
-        await actor.run({
+      it('should be able to pipe data', () => {
+        return actor.run({
           handle: { data: input, context },
           handleMediaType: 'text/shaclc',
           context,
@@ -352,7 +354,7 @@ describe('ActorRdfParseShaclc', () => {
 
             output.handle.data.pipe(readable);
 
-            await expect(arrayifyStream(readable)).resolves.toEqualRdfQuadArray([
+            expect(await arrayifyStream(readable)).toEqualRdfQuadArray([
               quad(
                 'http://example.org/test#TestShape',
                 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',

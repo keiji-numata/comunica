@@ -15,17 +15,15 @@ describe('ActorQueryResultSerializeFixedMediaTypes', () => {
     });
 
     it('should not be able to create new ActorQueryResultSerializeFixedMediaTypes objects without \'new\'', () => {
-      expect(() => {
-        (<any> ActorQueryResultSerializeFixedMediaTypes)();
-      }).toThrow(`Class constructor ActorQueryResultSerializeFixedMediaTypes cannot be invoked without 'new'`);
+      expect(() => { (<any> ActorQueryResultSerializeFixedMediaTypes)(); }).toThrow();
     });
   });
 
   describe('An ActorQueryResultSerializeFixedMediaTypes instance', () => {
     const actor = new (<any> ActorQueryResultSerializeFixedMediaTypes)({ name: 'actor', bus });
 
-    it('should have a default testHandleChecked implementation', async() => {
-      await expect(actor.testHandleChecked(null)).resolves.toBeTruthy();
+    it('should have a default testHandleChecked implementation', () => {
+      return expect(actor.testHandleChecked(null)).resolves.toBeTruthy();
     });
   });
 });

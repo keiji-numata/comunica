@@ -17,7 +17,6 @@ describe('ActorBindingsAggregatorFactoryAverage', () => {
   let mediatorExpressionEvaluatorFactory: MediatorExpressionEvaluatorFactory;
   let mediatorFunctionFactory: MediatorFunctionFactory;
   let context: IActionContext;
-  const exception = 'This actor only supports the \'avg\' aggregator.';
 
   beforeEach(() => {
     bus = new Bus({ name: 'bus' });
@@ -41,30 +40,30 @@ describe('ActorBindingsAggregatorFactoryAverage', () => {
     });
 
     describe('test', () => {
-      it('accepts average 1', async() => {
-        await expect(actor.test({
+      it('accepts average 1', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('avg', false),
         })).resolves.toEqual({});
       });
 
-      it('accepts average 2', async() => {
-        await expect(actor.test({
+      it('accepts average 2', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('avg', true),
         })).resolves.toEqual({});
       });
 
-      it('rejects sum', async() => {
-        await expect(actor.test({
+      it('rejects sum', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('sum', false),
-        })).rejects.toThrow(exception);
+        })).rejects.toThrow();
       });
     });
 
-    it('should run', async() => {
-      await expect(actor.run({
+    it('should run', () => {
+      return expect(actor.run({
         context,
         expr: makeAggregate('avg', false),
       })).resolves.toMatchObject({});

@@ -11,15 +11,12 @@ import { ActorBindingsAggregatorFactoryCount } from '../lib';
 describe('ActorExpressionEvaluatorAggregateCount', () => {
   let bus: any;
   let mediatorExpressionEvaluatorFactory: MediatorExpressionEvaluatorFactory;
-  const exception = 'This actor only supports the \'count\' aggregator without wildcard.';
 
   beforeEach(() => {
     bus = new Bus({ name: 'bus' });
 
     const mediatorQueryOperation: any = {
-      async mediate(arg: any) {
-        return {};
-      },
+      async mediate(arg: any) { return {}; },
     };
 
     mediatorExpressionEvaluatorFactory = getMockMediatorExpressionEvaluatorFactory({
@@ -42,22 +39,22 @@ describe('ActorExpressionEvaluatorAggregateCount', () => {
     });
 
     describe('test', () => {
-      it('accepts count 1', async() => {
-        await expect(actor.test({
+      it('accepts count 1', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('count', false),
         })).resolves.toEqual({});
       });
 
-      it('accepts count 2', async() => {
-        await expect(actor.test({
+      it('accepts count 2', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('count', true),
         })).resolves.toEqual({});
       });
 
-      it('rejects wildcard', async() => {
-        await expect(actor.test({
+      it('rejects wildcard', () => {
+        return expect(actor.test({
           context,
           expr: {
             type: Algebra.types.EXPRESSION,
@@ -71,19 +68,19 @@ describe('ActorExpressionEvaluatorAggregateCount', () => {
               wildcard: new Wildcard(),
             },
           },
-        })).rejects.toThrow(exception);
+        })).rejects.toThrow();
       });
 
-      it('rejects sum', async() => {
-        await expect(actor.test({
+      it('rejects sum', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('sum', false),
-        })).rejects.toThrow(exception);
+        })).rejects.toThrow();
       });
     });
 
-    it('should run', async() => {
-      await expect(actor.run({
+    it('should run', () => {
+      return expect(actor.run({
         context,
         expr: makeAggregate('count', false),
       })).resolves.toMatchObject({});

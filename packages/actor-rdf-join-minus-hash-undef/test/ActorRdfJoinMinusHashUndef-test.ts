@@ -24,10 +24,7 @@ describe('ActorRdfJoinMinusHashUndef', () => {
   describe('An ActorRdfJoinMinusHashUndef instance', () => {
     let mediatorJoinSelectivity: Mediator<
     Actor<IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>,
-    IActionRdfJoinSelectivity,
-IActorTest,
-IActorRdfJoinSelectivityOutput
->;
+    IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>;
     let actor: ActorRdfJoinMinusHashUndef;
 
     beforeEach(() => {
@@ -71,7 +68,7 @@ IActorRdfJoinSelectivityOutput
       });
 
       it('should test on two entries', async() => {
-        await expect(actor.test({
+        expect(await actor.test({
           type: 'minus',
           entries: <any> [
             {
@@ -102,7 +99,7 @@ IActorRdfJoinSelectivityOutput
             },
           ],
           context,
-        })).resolves.toEqual({
+        })).toEqual({
           iterations: 8.08,
           blockingItems: 4,
           persistedItems: 4,
@@ -153,8 +150,8 @@ IActorRdfJoinSelectivityOutput
         const { result } = await actor.getOutput(action);
 
         // Validate output
-        expect(result.type).toBe('bindings');
-        await expect(result.metadata()).resolves.toEqual({
+        expect(result.type).toEqual('bindings');
+        expect(await result.metadata()).toEqual({
           cardinality: 3,
           canContainUndefs: false,
           variables: [ DF.variable('a') ],
@@ -205,8 +202,8 @@ IActorRdfJoinSelectivityOutput
         const { result } = await actor.getOutput(action);
 
         // Validate output
-        expect(result.type).toBe('bindings');
-        await expect(result.metadata()).resolves.toEqual({
+        expect(result.type).toEqual('bindings');
+        expect(await result.metadata()).toEqual({
           cardinality: 3,
           canContainUndefs: false,
           variables: [ DF.variable('a') ],
@@ -272,8 +269,8 @@ IActorRdfJoinSelectivityOutput
         const { result } = await actor.getOutput(action);
 
         // Validate output
-        expect(result.type).toBe('bindings');
-        await expect(result.metadata()).resolves.toEqual({
+        expect(result.type).toEqual('bindings');
+        expect(await result.metadata()).toEqual({
           cardinality: 3,
           canContainUndefs: false,
           variables: [ DF.variable('a'), DF.variable('b') ],
@@ -340,8 +337,8 @@ IActorRdfJoinSelectivityOutput
         const { result } = await actor.getOutput(action);
 
         // Validate output
-        expect(result.type).toBe('bindings');
-        await expect(result.metadata()).resolves.toEqual({
+        expect(result.type).toEqual('bindings');
+        expect(await result.metadata()).toEqual({
           cardinality: 3,
           canContainUndefs: true,
           variables: [ DF.variable('a'), DF.variable('b') ],
@@ -406,8 +403,8 @@ IActorRdfJoinSelectivityOutput
         const { result } = await actor.getOutput(action);
 
         // Validate output
-        expect(result.type).toBe('bindings');
-        await expect(result.metadata()).resolves.toEqual({
+        expect(result.type).toEqual('bindings');
+        expect(await result.metadata()).toEqual({
           cardinality: 3,
           canContainUndefs: true,
           variables: [ DF.variable('a'), DF.variable('b') ],

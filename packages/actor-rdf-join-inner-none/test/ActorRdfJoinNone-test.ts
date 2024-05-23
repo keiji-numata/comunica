@@ -7,11 +7,6 @@ import { ActorRdfJoinNone } from '../lib/ActorRdfJoinNone';
 import '@comunica/jest';
 
 const BF = new BindingsFactory();
-const mediatorMergeBindingsContext: any = {
-  mediate(arg: any) {
-    return {};
-  },
-};
 
 describe('ActorRdfJoinNone', () => {
   let bus: any;
@@ -23,10 +18,7 @@ describe('ActorRdfJoinNone', () => {
   describe('An ActorRdfJoinNone instance', () => {
     let mediatorJoinSelectivity: Mediator<
     Actor<IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>,
-    IActionRdfJoinSelectivity,
-IActorTest,
-IActorRdfJoinSelectivityOutput
->;
+    IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>;
     let actor: ActorRdfJoinNone;
     let context: IActionContext;
 
@@ -34,7 +26,7 @@ IActorRdfJoinSelectivityOutput
       mediatorJoinSelectivity = <any> {
         mediate: async() => ({ selectivity: 1 }),
       };
-      actor = new ActorRdfJoinNone({ name: 'actor', bus, mediatorJoinSelectivity, mediatorMergeBindingsContext });
+      actor = new ActorRdfJoinNone({ name: 'actor', bus, mediatorJoinSelectivity });
       context = new ActionContext();
     });
 
@@ -52,15 +44,15 @@ IActorRdfJoinSelectivityOutput
             },
           ],
           context,
-        })).rejects.toThrow('Actor actor can only join zero entries');
+        })).rejects.toThrowError('Actor actor can only join zero entries');
       });
 
       it('should test on zero entries', async() => {
-        await expect(actor.test({
+        expect(await actor.test({
           type: 'inner',
           entries: [],
           context,
-        })).resolves.toEqual({
+        })).toEqual({
           iterations: 0,
           persistedItems: 0,
           blockingItems: 0,
@@ -76,7 +68,7 @@ IActorRdfJoinSelectivityOutput
           context,
         });
         await expect(output.bindingsStream).toEqualBindingsStream([ BF.bindings() ]);
-        await expect(output.metadata()).resolves
+        expect(await output.metadata())
           .toMatchObject({ cardinality: { type: 'exact', value: 1 }, canContainUndefs: false, variables: []});
       });
     });

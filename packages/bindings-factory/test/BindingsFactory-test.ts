@@ -4,21 +4,16 @@ import { Bindings } from '../lib/Bindings';
 import { BindingsFactory } from '../lib/BindingsFactory';
 
 const DF = new DataFactory();
-const mediatorMergeBindingsContext: any = {
-  mediate(arg: any) {
-    return {};
-  },
-};
 
 describe('BindingsFactory', () => {
   let factory: RDF.BindingsFactory;
 
   beforeEach(() => {
-    factory = new BindingsFactory(DF, {});
+    factory = new BindingsFactory(DF);
   });
 
   it('should allow construction without args', () => {
-    factory = new BindingsFactory(DF, {});
+    factory = new BindingsFactory();
     expect((<any> factory).dataFactory).toBeInstanceOf(DataFactory);
   });
 

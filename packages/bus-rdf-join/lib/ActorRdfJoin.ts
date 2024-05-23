@@ -1,4 +1,4 @@
-import type { MediatorRdfJoinEntriesSort } from '@comunica/bus-rdf-join-entries-sort';
+import { ActorQueryOperation } from '@comunica/bus-query-operation';
 import type {
   MediatorRdfJoinSelectivity,
 } from '@comunica/bus-rdf-join-selectivity';
@@ -6,15 +6,10 @@ import { KeysInitQuery } from '@comunica/context-entries';
 import type { IAction, IActorArgs, Mediate } from '@comunica/core';
 import { Actor } from '@comunica/core';
 import type { IMediatorTypeJoinCoefficients } from '@comunica/mediatortype-join-coefficients';
-import { cachifyMetadata, MetadataValidationState } from '@comunica/metadata';
+import { MetadataValidationState } from '@comunica/metadata';
 import type {
-  IQueryOperationResultBindings,
-  MetadataBindings,
-  IPhysicalQueryPlanLogger,
-  Bindings,
-  IActionContext,
-  IJoinEntry,
-  IJoinEntryWithMetadata,
+  IQueryOperationResultBindings, MetadataBindings,
+  IPhysicalQueryPlanLogger, Bindings, IActionContext, IJoinEntry, IJoinEntryWithMetadata,
 } from '@comunica/types';
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
@@ -77,7 +72,7 @@ export abstract class ActorRdfJoin
    * This function will not sort the variables and expects them to be in the same order for every call.
    * @param {Bindings} bindings
    * @param {string[]} variables
-   * @returns {string} A hash string.
+   * @returns {string}
    */
   public static hash(bindings: Bindings, variables: RDF.Variable[]): string {
     return variables
@@ -89,7 +84,7 @@ export abstract class ActorRdfJoin
   /**
    * Returns an array containing all the variable names that occur in all bindings streams.
    * @param {MetadataBindings[]} metadatas An array of optional metadata objects for the entries.
-   * @returns {RDF.Variable[]} An array of variables.
+   * @returns {string[]}
    */
   public static overlappingVariables(metadatas: MetadataBindings[]): RDF.Variable[] {
     const variables = metadatas.map(metadata => metadata.variables);
@@ -103,7 +98,7 @@ export abstract class ActorRdfJoin
   /**
    * Returns the variables that will occur in the joined bindings.
    * @param {MetadataBindings[]} metadatas An array of metadata objects for the entries.
-   * @returns {RDF.Variable[]} An array of joined variables.
+   * @returns {string[]}
    */
   public static joinVariables(metadatas: MetadataBindings[]): RDF.Variable[] {
     return [ ...new Set(metadatas.flatMap(metadata => metadata.variables.map(variable => variable.value))) ]
@@ -115,7 +110,6 @@ export abstract class ActorRdfJoin
    * @param {Bindings[]} bindings
    * @returns {Bindings}
    */
-
   public static joinBindings(...bindings: Bindings[]): Bindings | null {
     if (bindings.length === 0) {
       return null;
@@ -166,7 +160,7 @@ export abstract class ActorRdfJoin
    * @param metadatas An array of checked metadata.
    */
   public static getRequestInitialTimes(metadatas: MetadataBindings[]): number[] {
-    return metadatas.map(metadata => metadata.pageSize ? 0 : metadata.requestTime ?? 0);
+    return metadatas.map(metadata => metadata.pageSize ? 0 : metadata.requestTime || 0);
   }
 
   /**
@@ -175,7 +169,7 @@ export abstract class ActorRdfJoin
    */
   public static getRequestItemTimes(metadatas: MetadataBindings[]): number[] {
     return metadatas
-      .map(metadata => metadata.pageSize ? (metadata.requestTime ?? 0) / metadata.pageSize : 0);
+      .map(metadata => !metadata.pageSize ? 0 : (metadata.requestTime || 0) / metadata.pageSize);
   }
 
   /**
@@ -227,80 +221,6 @@ export abstract class ActorRdfJoin
   }
 
   /**
-   * Order the given join entries using the join-entries-sort bus.
-   * @param {MediatorRdfJoinEntriesSort} mediatorJoinEntriesSort A mediator for sorting join entries.
-   * @param {IJoinEntryWithMetadata[]} entries An array of join entries.
-   * @param context The action context.
-   * @return {IJoinEntryWithMetadata[]} The sorted join entries.
-   */
-  public static async sortJoinEntries(
-    mediatorJoinEntriesSort: MediatorRdfJoinEntriesSort,
-    entries: IJoinEntryWithMetadata[],
-    context: IActionContext,
-  ): Promise<IJoinEntryWithMetadata[]> {
-    // If there is a stream that can contain undefs, we don't modify the join order.
-    const canContainUndefs = entries.some(entry => entry.metadata.canContainUndefs);
-    if (canContainUndefs) {
-      return entries;
-    }
-
-    // Calculate number of occurrences of each variable
-    const variableOccurrences: Record<string, number> = {};
-    for (const entry of entries) {
-      for (const variable of entry.metadata.variables) {
-        let counter = variableOccurrences[variable.value];
-        if (!counter) {
-          counter = 0;
-        }
-        variableOccurrences[variable.value] = ++counter;
-      }
-    }
-
-    // Determine variables that occur in at least two join entries
-    const multiOccurrenceVariables: string[] = [];
-    for (const [ variable, count ] of Object.entries(variableOccurrences)) {
-      if (count >= 2) {
-        multiOccurrenceVariables.push(variable);
-      }
-    }
-
-    // Reject if no entries have common variables
-    if (multiOccurrenceVariables.length === 0) {
-      throw new Error(`Bind join can only join entries with at least one common variable`);
-    }
-
-    // Determine entries without common variables
-    // These will be placed in the back of the sorted array
-    const entriesWithoutCommonVariables: IJoinEntryWithMetadata[] = [];
-    for (const entry of entries) {
-      let hasCommon = false;
-      for (const variable of entry.metadata.variables) {
-        if (multiOccurrenceVariables.includes(variable.value)) {
-          hasCommon = true;
-          break;
-        }
-      }
-      if (!hasCommon) {
-        entriesWithoutCommonVariables.push(entry);
-      }
-    }
-
-    return (await mediatorJoinEntriesSort.mediate({ entries, context })).entries
-      .sort((entryLeft, entryRight) => {
-        // Sort to make sure that entries without common variables come last in the array.
-        // For all other entries, the original order is kept.
-        const leftWithoutCommonVariables = entriesWithoutCommonVariables.includes(entryLeft);
-        const rightWithoutCommonVariables = entriesWithoutCommonVariables.includes(entryRight);
-        if (leftWithoutCommonVariables === rightWithoutCommonVariables) {
-          return 0;
-        }
-        return leftWithoutCommonVariables ?
-          1 :
-            -1;
-      });
-  }
-
-  /**
    * Default test function for join actors.
    * Checks whether all iterators have metadata.
    * If yes: call the abstract getIterations method, if not: return Infinity.
@@ -328,7 +248,6 @@ export abstract class ActorRdfJoin
     // Check if all streams are bindings streams
     for (const entry of action.entries) {
       if (entry.output.type !== 'bindings') {
-        // eslint-disable-next-line ts/restrict-template-expressions
         throw new Error(`Invalid type of a join entry: Expected 'bindings' but got '${entry.output.type}'`);
       }
     }
@@ -350,7 +269,7 @@ export abstract class ActorRdfJoin
   /**
    * Returns default input for 0 or 1 entries. Calls the getOutput function otherwise
    * @param {IActionRdfJoin} action
-   * @returns {Promise<IQueryOperationResultBindings>} A bindings result.
+   * @returns {Promise<IActorQueryOperationOutput>}
    */
   public async run(action: IActionRdfJoin): Promise<IQueryOperationResultBindings> {
     // Prepare logging to physical plan
@@ -389,7 +308,7 @@ export abstract class ActorRdfJoin
     }
 
     // Cache metadata
-    result.metadata = cachifyMetadata(result.metadata);
+    result.metadata = ActorQueryOperation.cachifyMetadata(result.metadata);
 
     return result;
   }

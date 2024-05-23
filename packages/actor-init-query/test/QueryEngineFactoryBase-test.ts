@@ -1,4 +1,3 @@
-import * as Path from 'node:path';
 import { QueryEngineBase } from '../lib/QueryEngineBase';
 import { QueryEngineFactoryBase } from '../lib/QueryEngineFactoryBase';
 
@@ -9,36 +8,36 @@ describe('QueryEngineFactoryBase', () => {
 
   beforeEach(() => {
     factory = new QueryEngineFactoryBase(
-      Path.join(__dirname, '../../../engines/query-sparql/'),
-      Path.join(__dirname, '../../../engines/query-sparql/config/config-default.json'),
+      `${__dirname}/../../../engines/query-sparql/`,
+      `${__dirname}/../../../engines/query-sparql/config/config-default.json`,
       actor => new QueryEngineBase(actor),
     );
   });
 
   describe('create', () => {
     it('should return a query engine', async() => {
-      await expect(factory.create({})).resolves
+      expect(await factory.create({}))
         .toBeInstanceOf(QueryEngineBase);
     });
 
     it('should return a query engine without options', async() => {
-      await expect(factory.create()).resolves
+      expect(await factory.create())
         .toBeInstanceOf(QueryEngineBase);
     });
 
     it('with mainModulePath option', async() => {
       const opts = {
-        mainModulePath: Path.join(__dirname, '../'),
+        mainModulePath: `${__dirname}/../`,
       };
-      await expect(factory.create(opts)).resolves
+      expect(await factory.create(opts))
         .toBeInstanceOf(QueryEngineBase);
     });
 
     it('with configPath option', async() => {
       const opts = {
-        configPath: Path.join(__dirname, '../../../engines/query-sparql/config/config-default.json'),
+        configPath: `${__dirname}/../../../engines/query-sparql/config/config-default.json`,
       };
-      await expect(factory.create(opts)).resolves
+      expect(await factory.create(opts))
         .toBeInstanceOf(QueryEngineBase);
     });
 
@@ -46,7 +45,7 @@ describe('QueryEngineFactoryBase', () => {
       const opts = {
         instanceUri: 'urn:comunica:default:init/actors#query',
       };
-      await expect(factory.create(opts)).resolves
+      expect(await factory.create(opts))
         .toBeInstanceOf(QueryEngineBase);
     });
 
@@ -54,7 +53,7 @@ describe('QueryEngineFactoryBase', () => {
       const opts = {
         runnerInstanceUri: 'urn:comunica:default:Runner',
       };
-      await expect(factory.create(opts)).resolves
+      expect(await factory.create(opts))
         .toBeInstanceOf(QueryEngineBase);
     });
 

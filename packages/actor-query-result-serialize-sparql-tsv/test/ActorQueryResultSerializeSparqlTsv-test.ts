@@ -1,8 +1,7 @@
-import { PassThrough } from 'node:stream';
+import { PassThrough } from 'stream';
 import { BindingsFactory } from '@comunica/bindings-factory';
 import { ActionContext, Bus } from '@comunica/core';
 import type { BindingsStream, IActionContext, MetadataBindings } from '@comunica/types';
-import type * as RDF from '@rdfjs/types';
 import { ArrayIterator } from 'asynciterator';
 import { DataFactory } from 'rdf-data-factory';
 import { ActorQueryResultSerializeSparqlTsv } from '..';
@@ -31,81 +30,79 @@ describe('ActorQueryResultSerializeSparqlTsv', () => {
     });
 
     it('should not be able to create new ActorQueryResultSerializeSparqlTsv objects without \'new\'', () => {
-      expect(() => {
-        (<any> ActorQueryResultSerializeSparqlTsv)();
-      }).toThrow(`Class constructor ActorQueryResultSerializeSparqlTsv cannot be invoked without 'new'`);
+      expect(() => { (<any> ActorQueryResultSerializeSparqlTsv)(); }).toThrow();
     });
   });
 
   describe('#bindingToTsvBindings', () => {
     it('should convert named nodes', () => {
-      expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.namedNode('http://ex.org')))
-        .toBe('<http://ex.org>');
+      return expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.namedNode('http://ex.org')))
+        .toEqual('<http://ex.org>');
     });
 
     it('should convert default graphs', () => {
-      expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.defaultGraph()))
-        .toBe('');
+      return expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.defaultGraph()))
+        .toEqual('');
     });
 
     it('should convert blank nodes', () => {
-      expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.blankNode('b1')))
-        .toBe('_:b1');
+      return expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.blankNode('b1')))
+        .toEqual('_:b1');
     });
 
     it('should convert plain literals', () => {
-      expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('abc')))
-        .toBe('"abc"');
+      return expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('abc')))
+        .toEqual('"abc"');
     });
 
     it('should convert literals with a language', () => {
-      expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('abc', 'en-us')))
-        .toBe('"abc"@en-us');
+      return expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('abc', 'en-us')))
+        .toEqual('"abc"@en-us');
     });
 
     it('should convert literals with a datatype', () => {
-      expect(ActorQueryResultSerializeSparqlTsv
+      return expect(ActorQueryResultSerializeSparqlTsv
         .bindingToTsvBindings(DF.literal('abc', DF.namedNode('http://ex'))))
-        .toBe('"abc"^^<http://ex>');
+        .toEqual('"abc"^^<http://ex>');
     });
 
     it('should convert literals with "', () => {
-      expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('ab"c')))
-        .toBe('"ab\\"c"');
+      return expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('ab"c')))
+        .toEqual('"ab\\"c"');
     });
 
     it('should convert literals with \n', () => {
-      expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('ab\nc')))
-        .toBe('"ab\\nc"');
+      return expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('ab\nc')))
+        .toEqual('"ab\\nc"');
     });
 
     it('should convert literals with \r', () => {
-      expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('ab\rc')))
-        .toBe('"ab\\rc"');
+      return expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('ab\rc')))
+        .toEqual('"ab\\rc"');
     });
 
     it('should convert literals with \t', () => {
-      expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('ab\tc')))
-        .toBe('"ab\\tc"');
+      return expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('ab\tc')))
+        .toEqual('"ab\\tc"');
     });
 
     it('should convert literals with ,', () => {
-      expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('ab,c')))
-        .toBe('"ab,c"');
+      return expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('ab,c')))
+        .toEqual('"ab,c"');
     });
 
     it('should convert literals with multiple escapable characters', () => {
-      expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('a"b,\n\rc')))
-        .toBe('"a\\"b,\\n\\rc"');
+      return expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.literal('a"b,\n\rc')))
+        .toEqual('"a\\"b,\\n\\rc"');
     });
 
     it('should convert quoted triples', () => {
-      expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.quad(
+      return expect(ActorQueryResultSerializeSparqlTsv.bindingToTsvBindings(DF.quad(
         DF.namedNode('ex:s'),
         DF.namedNode('ex:p'),
         DF.namedNode('ex:o'),
       )))
-        .toBe('<<<ex:s> <ex:p> <ex:o>>>');
+        .toEqual('<<<ex:s> <ex:p> <ex:o>>>');
     });
   });
 
@@ -120,10 +117,13 @@ describe('ActorQueryResultSerializeSparqlTsv', () => {
     let metadata: MetadataBindings;
 
     beforeEach(() => {
-      actor = new ActorQueryResultSerializeSparqlTsv({ bus, mediaTypePriorities: {
-        'text/tab-separated-values': 1,
-      }, mediaTypeFormats: {}, name: 'actor' });
-      bindingsStream = () => new ArrayIterator<RDF.Bindings>([
+      actor = new ActorQueryResultSerializeSparqlTsv({ bus,
+        mediaTypePriorities: {
+          'text/tab-separated-values': 1,
+        },
+        mediaTypeFormats: {},
+        name: 'actor' });
+      bindingsStream = () => new ArrayIterator([
         BF.bindings([
           [ DF.variable('k1'), DF.namedNode('v1') ],
         ]),
@@ -131,7 +131,7 @@ describe('ActorQueryResultSerializeSparqlTsv', () => {
           [ DF.variable('k2'), DF.namedNode('v2') ],
         ]),
       ]);
-      bindingsStreamPartial = () => new ArrayIterator<RDF.Bindings>([
+      bindingsStreamPartial = () => new ArrayIterator([
         BF.bindings([
           [ DF.variable('k1'), DF.namedNode('v1') ],
         ]),
@@ -140,7 +140,7 @@ describe('ActorQueryResultSerializeSparqlTsv', () => {
         ]),
         BF.bindings(),
       ]);
-      bindingsStreamMixed = () => new ArrayIterator<RDF.Bindings>([
+      bindingsStreamMixed = () => new ArrayIterator([
         BF.bindings([
           [ DF.variable('k1'), DF.literal('v"') ],
           [ DF.variable('k2'), DF.defaultGraph() ],
@@ -151,14 +151,10 @@ describe('ActorQueryResultSerializeSparqlTsv', () => {
         BF.bindings(),
       ]);
       bindingsStreamEmpty = <any> new PassThrough();
-      (<any> bindingsStreamEmpty)._read = <any> (() => {
-        bindingsStreamEmpty.emit('end');
-      });
+      (<any> bindingsStreamEmpty)._read = <any> (() => { bindingsStreamEmpty.emit('end'); });
       bindingsStreamError = <any> new PassThrough();
-      (<any> bindingsStreamError)._read = <any> (() => {
-        bindingsStreamError.emit('error', new Error('SparqlTsv'));
-      });
-      bindingsStreamQuoted = () => new ArrayIterator<RDF.Bindings>([
+      (<any> bindingsStreamError)._read = <any> (() => { bindingsStreamError.emit('error', new Error('SparqlTsv')); });
+      bindingsStreamQuoted = () => new ArrayIterator([
         BF.bindings([
           [ DF.variable('k1'), DF.quad(DF.namedNode('s1'), DF.namedNode('p1'), DF.namedNode('o1')) ],
         ]),
@@ -170,69 +166,63 @@ describe('ActorQueryResultSerializeSparqlTsv', () => {
     });
 
     describe('for getting media types', () => {
-      it('should test', async() => {
-        await expect(actor.test({ mediaTypes: true, context })).resolves.toBeTruthy();
+      it('should test', () => {
+        return expect(actor.test({ mediaTypes: true, context })).resolves.toBeTruthy();
       });
 
-      it('should run', async() => {
-        await expect(actor.run({ mediaTypes: true, context })).resolves.toEqual({ mediaTypes: {
+      it('should run', () => {
+        return expect(actor.run({ mediaTypes: true, context })).resolves.toEqual({ mediaTypes: {
           'text/tab-separated-values': 1,
         }});
       });
     });
 
     describe('for serializing', () => {
-      it('should not test on quad streams', async() => {
-        await expect(actor.test({
-          handle: <any> { type: 'quads', context },
+      it('should not test on quad streams', () => {
+        return expect(actor.test({ handle: <any> { type: 'quads', context },
           handleMediaType: 'text/tab-separated-values',
-          context,
-        }))
+          context }))
           .rejects.toBeTruthy();
       });
 
       it('should test on text/tab-separated-values bindings', async() => {
         const stream = bindingsStream();
-        await expect(actor.test({
-          handle: <any> { bindingsStream: stream, type: 'bindings', context },
+        await expect(actor.test({ handle: <any> { bindingsStream: stream, type: 'bindings', context },
           handleMediaType: 'text/tab-separated-values',
-          context,
-        }))
+          context }))
           .resolves.toBeTruthy();
 
         stream.destroy();
       });
 
-      it('should not test on sparql-results+tsv booleans', async() => {
-        await expect(actor.test({
-          handle: <any> { booleanResult: Promise.resolve(true), type: 'boolean', context },
+      it('should not test on sparql-results+tsv booleans', () => {
+        return expect(actor.test({ handle: <any> { booleanResult: Promise.resolve(true), type: 'boolean', context },
           handleMediaType: 'text/tab-separated-values',
-          context,
-        }))
+          context }))
           .rejects.toBeTruthy();
       });
 
       it('should not test on N-Triples', async() => {
         const stream = bindingsStream();
-        await expect(actor.test({
-          handle: <any> { bindingsStream: stream, type: 'bindings', context },
+        await expect(actor.test({ handle: <any> { bindingsStream: stream, type: 'bindings', context },
           handleMediaType: 'application/n-triples',
-          context,
-        }))
+          context }))
           .rejects.toBeTruthy();
 
         stream.destroy();
       });
 
       it('should run on a bindings stream', async() => {
-        await expect(stringifyStream((<any> (await actor.run(
+        expect(await stringifyStream((<any> (await actor.run(
           { handle: <any> {
             bindingsStream: bindingsStream(),
             type: 'bindings',
             metadata: async() => metadata,
             context,
-          }, handleMediaType: 'text/tab-separated-values', context },
-        ))).handle.data)).resolves.toBe(
+          },
+          handleMediaType: 'text/tab-separated-values',
+          context },
+        ))).handle.data)).toEqual(
           `k1\tk2
 <v1>\t
 \t<v2>
@@ -241,14 +231,16 @@ describe('ActorQueryResultSerializeSparqlTsv', () => {
       });
 
       it('should run on a bindings stream without variables', async() => {
-        await expect(stringifyStream((<any> (await actor.run(
+        expect(await stringifyStream((<any> (await actor.run(
           { handle: <any> {
             bindingsStream: bindingsStream(),
             type: 'bindings',
             metadata: async() => ({ variables: []}),
             context,
-          }, handleMediaType: 'text/tab-separated-values', context },
-        ))).handle.data)).resolves.toBe(
+          },
+          handleMediaType: 'text/tab-separated-values',
+          context },
+        ))).handle.data)).toEqual(
           `
 
 
@@ -257,14 +249,16 @@ describe('ActorQueryResultSerializeSparqlTsv', () => {
       });
 
       it('should run on a bindings stream with unbound variables', async() => {
-        await expect(stringifyStream((<any> (await actor.run(
+        expect(await stringifyStream((<any> (await actor.run(
           { handle: <any> {
             bindingsStream: bindingsStreamPartial(),
             type: 'bindings',
             metadata: async() => ({ variables: [ DF.variable('k3') ]}),
             context,
-          }, handleMediaType: 'text/tab-separated-values', context },
-        ))).handle.data)).resolves.toBe(
+          },
+          handleMediaType: 'text/tab-separated-values',
+          context },
+        ))).handle.data)).toEqual(
           `k3
 
 
@@ -275,16 +269,14 @@ describe('ActorQueryResultSerializeSparqlTsv', () => {
     });
 
     it('should run on a bindings stream containing values with special characters', async() => {
-      await expect(stringifyStream((<any> (await actor.run({
-        handle: <any> {
-          bindingsStream: bindingsStreamMixed(),
+      expect(await stringifyStream((<any> (await actor.run({
+        handle: <any> { bindingsStream: bindingsStreamMixed(),
           type: 'bindings',
           metadata: async() => metadata,
-          context,
-        },
+          context },
         handleMediaType: 'text/tab-separated-values',
         context,
-      }))).handle.data)).resolves.toBe(
+      }))).handle.data)).toEqual(
         `k1\tk2
 "v\\""\t
 \t<v\\n\\r,>
@@ -294,11 +286,11 @@ describe('ActorQueryResultSerializeSparqlTsv', () => {
     });
 
     it('should run on an empty bindings stream', async() => {
-      await expect(stringifyStream((<any> (await actor.run({
+      expect(await stringifyStream((<any> (await actor.run({
         handle: <any> { bindingsStream: bindingsStreamEmpty, type: 'bindings', metadata: async() => metadata, context },
         handleMediaType: 'text/tab-separated-values',
         context,
-      }))).handle.data)).resolves.toBe(
+      }))).handle.data)).toEqual(
         `k1\tk2
 `,
       );
@@ -313,14 +305,16 @@ describe('ActorQueryResultSerializeSparqlTsv', () => {
     });
 
     it('should run on a bindings stream with quoted triples', async() => {
-      await expect(stringifyStream((<any> (await actor.run(
+      expect(await stringifyStream((<any> (await actor.run(
         { handle: <any> {
           bindingsStream: bindingsStreamQuoted(),
           type: 'bindings',
           metadata: async() => metadata,
           context,
-        }, handleMediaType: 'text/tab-separated-values', context },
-      ))).handle.data)).resolves.toBe(
+        },
+        handleMediaType: 'text/tab-separated-values',
+        context },
+      ))).handle.data)).toEqual(
         `k1\tk2
 <<<s1> <p1> <o1>>>\t
 \t<<<s2> <p2> <o2>>>

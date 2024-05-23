@@ -1,4 +1,4 @@
-/* eslint-disable unicorn/no-process-exit */
+/* eslint-disable no-process-env,unicorn/no-process-exit */
 import type { IActorOutputInit } from '@comunica/bus-init';
 import { ActionContext } from '@comunica/core';
 import type { ISetupProperties } from '@comunica/runner';
@@ -8,29 +8,19 @@ import type { Readable } from 'readable-stream';
 
 const process: NodeJS.Process = require('process/');
 
-export function runArgs(
-  configResourceUrl: string,
-  argv: string[],
-  stdin: NodeJS.ReadStream,
-  stdout: NodeJS.WriteStream,
-  stderr: NodeJS.WriteStream,
-  exit: (code?: number) => void,
-  env: NodeJS.ProcessEnv,
-  runnerUri?: string,
-  properties?: ISetupProperties,
-  context?: IActionContext,
-): void {
+export function runArgs(configResourceUrl: string, argv: string[], stdin: NodeJS.ReadStream,
+  stdout: NodeJS.WriteStream, stderr: NodeJS.WriteStream, exit: (code?: number) => void, env: NodeJS.ProcessEnv,
+  runnerUri?: string, properties?: ISetupProperties, context?: IActionContext): void {
   run(configResourceUrl, {
     argv,
     env,
     stdin: <Readable><any> stdin,
-    context: context ?? new ActionContext(),
+    context: context || new ActionContext(),
   }, runnerUri, properties)
     .then((results: IActorOutputInit[]) => {
-      // eslint-disable-next-line unicorn/no-array-for-each
       results.forEach((result: IActorOutputInit) => {
         if (result.stdout) {
-          result.stdout.on('error', (error) => {
+          result.stdout.on('error', error => {
             stderr.write(errorToString(error, argv));
             exit(1);
           });
@@ -40,7 +30,7 @@ export function runArgs(
           });
         }
         if (result.stderr) {
-          result.stderr.on('error', (error) => {
+          result.stderr.on('error', error => {
             stderr.write(errorToString(error, argv));
             exit(1);
           });
@@ -63,7 +53,7 @@ export function runArgsInProcess(
 ): void {
   const argv = process.argv.slice(2);
   runArgs(
-    process.env.COMUNICA_CONFIG ?? defaultConfigPath,
+    process.env.COMUNICA_CONFIG ? `${process.cwd()}/${process.env.COMUNICA_CONFIG}` : defaultConfigPath,
     argv,
     process.stdin,
     process.stdout,
@@ -90,7 +80,7 @@ export function runArgsInProcessStatic(actor: any, options?: { context: IActionC
   actor.run({ argv, env: process.env, stdin: process.stdin, context: options?.context })
     .then((result: IActorOutputInit) => {
       if (result.stdout) {
-        result.stdout.on('error', (error) => {
+        result.stdout.on('error', error => {
           process.stderr.write(errorToString(error, argv));
           if (options?.onDone) {
             options?.onDone();
@@ -105,7 +95,7 @@ export function runArgsInProcessStatic(actor: any, options?: { context: IActionC
         });
       }
       if (result.stderr) {
-        result.stderr.on('error', (error) => {
+        result.stderr.on('error', error => {
           process.stderr.write(errorToString(error, argv));
           if (options?.onDone) {
             options?.onDone();
@@ -134,4 +124,4 @@ function errorToString(error: Error, argv: string[]): string {
   return argv.includes('--showStackTrace') ? `${error.stack}\n` : `${error.message}\n`;
 }
 
-/* eslint-enable unicorn/no-process-exit */
+/* eslint-enable no-process-env,unicorn/no-process-exit */

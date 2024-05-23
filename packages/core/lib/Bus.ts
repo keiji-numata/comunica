@@ -201,12 +201,8 @@ export interface IBusArgs {
 /**
  * Data interface for holding an actor and a promise to a reply from that actor.
  */
-export interface IActorReply<
-  A extends Actor<I, T, O>,
-I extends IAction,
-T extends IActorTest,
-O extends IActorOutput,
-> {
+export interface IActorReply<A extends Actor<I, T, O>,
+  I extends IAction, T extends IActorTest, O extends IActorOutput> {
   actor: A;
   reply: Promise<T>;
 }
@@ -214,7 +210,7 @@ O extends IActorOutput,
 export type IReply<
   I extends IAction = IAction,
   O extends IActorOutput = IActorOutput,
-  T extends IActorTest = IActorTest,
+  T extends IActorTest = IActorTest
 > = IActorReply<Actor<I, T, O>, I, T, O>;
 
 export type IBus<I extends IAction = IAction, O extends IActorOutput = IActorOutput, T extends IActorTest = IActorTest>

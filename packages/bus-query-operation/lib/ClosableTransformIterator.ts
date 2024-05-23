@@ -15,7 +15,7 @@ export class ClosableTransformIterator<S, D = S> extends TransformIterator<S, D>
     this.onClose = options.onClose;
   }
 
-  protected override _end(destroy: boolean): void {
+  protected _end(destroy: boolean): void {
     this.onClose();
     super._end(destroy);
   }

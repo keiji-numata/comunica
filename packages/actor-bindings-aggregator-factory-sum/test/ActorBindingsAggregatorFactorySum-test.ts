@@ -6,8 +6,7 @@ import type { MediatorFunctionFactory } from '@comunica/bus-function-factory';
 import { Bus } from '@comunica/core';
 import {
   BF,
-  DF,
-  getMockEEActionContext,
+  DF, getMockEEActionContext,
   getMockMediatorExpressionEvaluatorFactory,
   makeAggregate,
 } from '@comunica/jest';
@@ -19,7 +18,6 @@ describe('ActorBindingsAggregatorFactorySum', () => {
   let bus: any;
   let mediatorExpressionEvaluatorFactory: MediatorExpressionEvaluatorFactory;
   let mediatorFunctionFactory: MediatorFunctionFactory;
-  const exception = 'This actor only supports the \'sum\' aggregator.';
 
   beforeEach(() => {
     bus = new Bus({ name: 'bus' });
@@ -59,30 +57,30 @@ describe('ActorBindingsAggregatorFactorySum', () => {
     });
 
     describe('test', () => {
-      it('accepts sum 1', async() => {
-        await expect(actor.test({
+      it('accepts sum 1', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('sum', false),
         })).resolves.toEqual({});
       });
 
-      it('accepts sum 2', async() => {
-        await expect(actor.test({
+      it('accepts sum 2', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('sum', true),
         })).resolves.toEqual({});
       });
 
-      it('rejects count', async() => {
-        await expect(actor.test({
+      it('rejects count', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('count', false),
-        })).rejects.toThrow(exception);
+        })).rejects.toThrow();
       });
     });
 
-    it('should run', async() => {
-      await expect(actor.run({
+    it('should run', () => {
+      return expect(actor.run({
         context,
         expr: makeAggregate('sum', false),
       })).resolves.toMatchObject({});

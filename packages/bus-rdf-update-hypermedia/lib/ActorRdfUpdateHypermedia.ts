@@ -64,9 +64,6 @@ export interface IActorRdfUpdateHypermediaOutput extends IActorOutput {
 }
 
 export type IActorRdfUpdateHypermediaArgs = IActorArgs<
-IActionRdfUpdateHypermedia,
-IActorTest,
-IActorRdfUpdateHypermediaOutput
->;
+IActionRdfUpdateHypermedia, IActorTest, IActorRdfUpdateHypermediaOutput>;
 
 export type MediatorRdfUpdateHypermedia = Mediate<IActionRdfUpdateHypermedia, IActorRdfUpdateHypermediaOutput>;

@@ -32,3 +32,4 @@ export class ActorBindingsAggregatorFactorySample extends ActorBindingsAggregato
     );
   }
 }
+

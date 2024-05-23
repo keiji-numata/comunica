@@ -15,7 +15,7 @@ describe('ActorHttpProxy', () => {
     bus = new Bus({ name: 'bus' });
     context = new ActionContext();
     mediatorHttp = {
-      mediate: jest.fn((args) => {
+      mediate: jest.fn(args => {
         return { output: 'ABC', headers: new Headers({}) };
       }),
     };
@@ -32,9 +32,7 @@ describe('ActorHttpProxy', () => {
     });
 
     it('should not be able to create new ActorHttpProxy objects without \'new\'', () => {
-      expect(() => {
-        (<any> ActorHttpProxy)();
-      }).toThrow(`Class constructor ActorHttpProxy cannot be invoked without 'new'`);
+      expect(() => { (<any> ActorHttpProxy)(); }).toThrow();
     });
   });
 
@@ -48,29 +46,29 @@ describe('ActorHttpProxy', () => {
       });
     });
 
-    it('should test on a valid proxy handler', async() => {
+    it('should test on a valid proxy handler', () => {
       const input = 'http://example.org';
-      await expect(actor.test({ input, context })).resolves.toEqual({ time: Number.POSITIVE_INFINITY });
+      return expect(actor.test({ input, context })).resolves.toEqual({ time: Number.POSITIVE_INFINITY });
     });
 
-    it('should not test on a no proxy handler', async() => {
+    it('should not test on a no proxy handler', () => {
       const input = 'http://example.org';
-      await expect(actor.test({ input, context: new ActionContext({}) })).rejects
+      return expect(actor.test({ input, context: new ActionContext({}) })).rejects
         .toThrow(new Error('Actor actor could not find a proxy handler in the context.'));
     });
 
-    it('should not test on an invalid proxy handler', async() => {
+    it('should not test on an invalid proxy handler', () => {
       const input = 'http://example.org';
       context = new ActionContext({
         [KeysHttpProxy.httpProxyHandler.name]: { getProxy: () => null },
       });
-      await expect(actor.test({ input, context })).rejects
+      return expect(actor.test({ input, context })).rejects
         .toThrow(new Error('Actor actor could not determine a proxy for the given request.'));
     });
 
     it('should run when the proxy does not return an x-final-url header', async() => {
       const input = 'http://example.org/';
-      await expect(actor.run({ input, context })).resolves
+      expect(await actor.run({ input, context }))
         .toEqual({ url: 'http://example.org/', output: 'ABC', headers: new Headers({}) });
       expect(mediatorHttp.mediate).toHaveBeenCalledWith(
         { input: 'http://proxy.org/http://example.org/', context: new ActionContext({}) },
@@ -80,10 +78,10 @@ describe('ActorHttpProxy', () => {
     it('should run when the proxy does return an x-final-url header', async() => {
       const input = 'http://example.org/';
       const headers = new Headers({ 'x-final-url': 'http://example.org/redirected/' });
-      jest.spyOn(mediatorHttp, 'mediate').mockImplementation((args) => {
+      mediatorHttp.mediate = jest.fn(args => {
         return { output: 'ABC', headers };
       });
-      await expect(actor.run({ input, context })).resolves
+      expect(await actor.run({ input, context }))
         .toEqual({ url: 'http://example.org/redirected/', output: 'ABC', headers });
       expect(mediatorHttp.mediate).toHaveBeenCalledWith(
         { input: 'http://proxy.org/http://example.org/', context: new ActionContext({}) },
@@ -92,7 +90,7 @@ describe('ActorHttpProxy', () => {
 
     it('should run on a request input', async() => {
       const input = new Request('http://example.org/');
-      await expect(actor.run({ input, context })).resolves
+      expect(await actor.run({ input, context }))
         .toEqual({ url: 'http://example.org/', output: 'ABC', headers: new Headers({}) });
       expect(mediatorHttp.mediate).toHaveBeenCalledWith(
         {

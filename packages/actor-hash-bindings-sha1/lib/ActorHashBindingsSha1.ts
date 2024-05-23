@@ -4,7 +4,6 @@ import type { IActorTest } from '@comunica/core';
 import { sha1 } from 'hash.js';
 import { termToString } from 'rdf-string';
 
-// eslint-disable-next-line ts/no-require-imports,ts/no-var-requires
 const canonicalize = require('canonicalize');
 
 /**
@@ -18,7 +17,7 @@ export class ActorHashBindingsSha1 extends ActorHashBindings {
     return true;
   }
 
-  public async run(_action: IActionHashBindings): Promise<IActorHashBindingsOutput> {
+  public async run(action: IActionHashBindings): Promise<IActorHashBindingsOutput> {
     return {
       hashFunction: bindings => sha1()
         .update(canonicalize(Object.fromEntries([ ...bindings ]

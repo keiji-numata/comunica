@@ -5,7 +5,6 @@ import { DataFactory } from 'rdf-data-factory';
 import { TermTransformer } from '../../../lib';
 import { TypeURL as DT } from '../../../lib/util/Consts';
 
-// eslint-disable-next-line jest/no-untyped-mock-factory
 jest.mock('../../../lib/util/Parsing', () => ({
   __esModule: true,
   parseDate() {
@@ -13,7 +12,7 @@ jest.mock('../../../lib/util/Parsing', () => ({
   },
 }));
 
-// eslint-disable-next-line jest/no-disabled-tests
+// eslint-disable-next-line mocha/no-skipped-tests
 describe.skip('term Tranformer', () => {
   let termTransformer: TermTransformer;
   beforeEach(() => {
@@ -25,7 +24,7 @@ describe.skip('term Tranformer', () => {
   it('Throws non-Expression errors of parsers', () => {
     const lit = DF.literal('apple', DF.namedNode(DT.XSD_DATE));
 
-    expect(() => termTransformer.transformLiteral(lit)).toThrow('mine');
+    expect(() => termTransformer.transformLiteral(lit)).toThrow();
 
     jest.clearAllMocks();
   });

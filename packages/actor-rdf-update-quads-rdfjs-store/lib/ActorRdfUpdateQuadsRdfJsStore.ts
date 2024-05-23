@@ -1,6 +1,5 @@
 import type {
-  IActionRdfUpdateQuads,
-  IActorRdfUpdateQuadsArgs,
+  IActionRdfUpdateQuads, IActorRdfUpdateQuadsArgs,
   IQuadDestination,
 } from '@comunica/bus-rdf-update-quads';
 import { ActorRdfUpdateQuadsDestination, getContextDestination } from '@comunica/bus-rdf-update-quads';
@@ -17,7 +16,7 @@ export class ActorRdfUpdateQuadsRdfJsStore extends ActorRdfUpdateQuadsDestinatio
     super(args);
   }
 
-  public override async test(action: IActionRdfUpdateQuads): Promise<IActorTest> {
+  public async test(action: IActionRdfUpdateQuads): Promise<IActorTest> {
     const destination = getContextDestination(action.context);
     if (!destination || typeof destination === 'string' ||
       (!('remove' in destination) && 'value' in destination && !(<RDF.Store> destination.value).remove)) {

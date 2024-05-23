@@ -14,7 +14,6 @@ import { ActorBindingsAggregatorFactoryGroupConcat } from '../lib';
 describe('ActorBindingsAggregatorFactoryGroupConcat', () => {
   let bus: any;
   let mediatorExpressionEvaluatorFactory: MediatorExpressionEvaluatorFactory;
-  const exception = 'This actor only supports the \'group_concat\' aggregator.';
 
   beforeEach(() => {
     bus = new Bus({ name: 'bus' });
@@ -48,34 +47,33 @@ describe('ActorBindingsAggregatorFactoryGroupConcat', () => {
         mediatorExpressionEvaluatorFactory,
       });
 
-      context = getMockEEActionContext();
-    });
+      context = getMockEEActionContext(); });
 
     describe('test', () => {
-      it('accepts group_concat 1', async() => {
-        await expect(actor.test({
+      it('accepts group_concat 1', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('group_concat', false),
         })).resolves.toEqual({});
       });
 
-      it('accepts group_concat 2', async() => {
-        await expect(actor.test({
+      it('accepts group_concat 2', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('group_concat', true),
         })).resolves.toEqual({});
       });
 
-      it('rejects sum', async() => {
-        await expect(actor.test({
+      it('rejects sum', () => {
+        return expect(actor.test({
           context,
           expr: makeAggregate('sum', false),
-        })).rejects.toThrow(exception);
+        })).rejects.toThrow();
       });
     });
 
-    it('should run', async() => {
-      await expect(actor.run({
+    it('should run', () => {
+      return expect(actor.run({
         context,
         expr: makeAggregate('group_concat', false),
       })).resolves.toMatchObject({});

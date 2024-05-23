@@ -52,11 +52,11 @@ describe('CountAggregator', () => {
         BF.bindings([[ DF.variable('x'), int('4') ]]),
       ];
 
-      await expect(runAggregator(aggregator, input)).resolves.toEqual(DF.literal('1 2 3 4'));
+      expect(await runAggregator(aggregator, input)).toEqual(DF.literal('1 2 3 4'));
     });
 
     it('with respect to empty input', async() => {
-      await expect(runAggregator(aggregator, [])).resolves.toEqual(DF.literal(''));
+      expect(await runAggregator(aggregator, [])).toEqual(DF.literal(''));
     });
   });
 
@@ -75,7 +75,7 @@ describe('CountAggregator', () => {
         BF.bindings([[ DF.variable('x'), int('4') ]]),
       ];
 
-      await expect(runAggregator(aggregator, input)).resolves.toEqual(DF.literal('1;2;3;4'));
+      expect(await runAggregator(aggregator, input)).toEqual(DF.literal('1;2;3;4'));
     });
   });
 
@@ -94,11 +94,11 @@ describe('CountAggregator', () => {
         BF.bindings([[ DF.variable('x'), int('1') ], [ DF.variable('y'), int('1') ]]),
       ];
 
-      await expect(runAggregator(aggregator, input)).resolves.toEqual(DF.literal('1 2'));
+      expect(await runAggregator(aggregator, input)).toEqual(DF.literal('1 2'));
     });
 
     it('with respect to empty input', async() => {
-      await expect(runAggregator(aggregator, [])).resolves.toEqual(DF.literal(''));
+      expect(await runAggregator(aggregator, [])).toEqual(DF.literal(''));
     });
   });
 });

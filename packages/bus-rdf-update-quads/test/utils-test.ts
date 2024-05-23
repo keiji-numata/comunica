@@ -1,71 +1,67 @@
 import { ActionContext } from '@comunica/core';
 import type * as RDF from '@rdfjs/types';
-import {
-  getDataDestinationType,
-  getDataDestinationValue,
-  getDataDestinationContext,
-  isDataDestinationRawType,
-} from '..';
+import { getDataDestinationType, getDataDestinationValue,
+  getDataDestinationContext, isDataDestinationRawType } from '..';
 
 describe('utils', () => {
   const rdfjsStore: RDF.Store = <any> { remove: true };
 
   describe('isDataDestinationRawType', () => {
     it('should return on a string source', () => {
-      expect(isDataDestinationRawType('abc')).toBe(true);
+      return expect(isDataDestinationRawType('abc')).toEqual(true);
     });
 
     it('should return on an rdfjs source', () => {
-      expect(isDataDestinationRawType(rdfjsStore)).toBe(true);
+      return expect(isDataDestinationRawType(rdfjsStore)).toEqual(true);
     });
 
     it('should return on an object source', () => {
-      expect(isDataDestinationRawType({ type: 'T', value: 'abc' })).toBe(false);
+      return expect(isDataDestinationRawType({ type: 'T', value: 'abc' })).toEqual(false);
     });
   });
 
   describe('getDataDestinationType', () => {
     it('should return on a string source', () => {
-      expect(getDataDestinationType('abc')).toBe('');
+      return expect(getDataDestinationType('abc')).toEqual('');
     });
 
     it('should return on an rdfjs source', () => {
-      expect(getDataDestinationType(rdfjsStore)).toBe('rdfjsStore');
+      return expect(getDataDestinationType(rdfjsStore)).toEqual('rdfjsStore');
     });
 
     it('should return on an object source', () => {
-      expect(getDataDestinationType({ type: 'T', value: 'abc' })).toBe('T');
+      return expect(getDataDestinationType({ type: 'T', value: 'abc' })).toEqual('T');
     });
 
     it('should return on an object source with implicit rdfjs source', () => {
-      expect(getDataDestinationType({ value: rdfjsStore })).toBeUndefined();
+      return expect(getDataDestinationType({ value: rdfjsStore })).toEqual(undefined);
     });
 
     it('should return on an object source with explicit rdfjs source', () => {
-      expect(getDataDestinationType({ type: 'rdfjsStore', value: rdfjsStore }))
-        .toBe('rdfjsStore');
+      return expect(getDataDestinationType({ type: 'rdfjsStore', value: rdfjsStore }))
+        .toEqual('rdfjsStore');
     });
   });
 
   describe('getDataDestinationValue', () => {
     it('should return on a string source', () => {
-      expect(getDataDestinationValue('abc')).toBe('abc');
+      return expect(getDataDestinationValue('abc')).toEqual('abc');
     });
 
     it('should return on a rdfjs source source', () => {
-      expect(getDataDestinationValue(rdfjsStore)).toEqual(rdfjsStore);
+      return expect(getDataDestinationValue(rdfjsStore)).toEqual(rdfjsStore);
     });
 
     it('should return on an object source', () => {
-      expect(getDataDestinationValue({ type: 'T', value: 'abc' })).toBe('abc');
+      return expect(getDataDestinationValue({ type: 'T', value: 'abc' })).toEqual('abc');
     });
 
     it('should return on an object source with implicit rdfjs source', () => {
-      expect(getDataDestinationValue({ value: rdfjsStore })).toEqual(rdfjsStore);
+      return expect(getDataDestinationValue({ value: rdfjsStore })).toEqual(rdfjsStore);
     });
 
     it('should return on an object source with explicit rdfjs source', () => {
-      expect(getDataDestinationValue({ type: 'rdfjsStore', value: rdfjsStore }))
+      return expect(getDataDestinationValue({ type: 'rdfjsStore', value: rdfjsStore }))
         .toEqual(rdfjsStore);
     });
   });
@@ -74,16 +70,16 @@ describe('utils', () => {
     const context = new ActionContext({ key: 'value' });
 
     it('should return on a string source', () => {
-      expect(getDataDestinationContext('abc', context)).toEqual(context);
+      return expect(getDataDestinationContext('abc', context)).toEqual(context);
     });
 
     it('should return on a rdfjs source source', () => {
-      expect(getDataDestinationContext(rdfjsStore, context)).toEqual(context);
+      return expect(getDataDestinationContext(rdfjsStore, context)).toEqual(context);
     });
 
     it('should return on an object source', () => {
       const sourceContext = new ActionContext({ auth: 'username:passwd' });
-      expect(getDataDestinationContext({ value: 'http://google.com', context: sourceContext }, context))
+      return expect(getDataDestinationContext({ value: 'http://google.com', context: sourceContext }, context))
         .toEqual(context.merge(sourceContext));
     });
   });

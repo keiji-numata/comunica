@@ -16,11 +16,6 @@ import '@comunica/jest';
 const DF = new DataFactory();
 const BF = new BindingsFactory();
 const FACTORY = new Factory();
-const mediatorMergeBindingsContext: any = {
-  mediate(arg: any) {
-    return {};
-  },
-};
 
 describe('ActorRdfJoinOptionalBind', () => {
   let bus: any;
@@ -34,16 +29,9 @@ describe('ActorRdfJoinOptionalBind', () => {
   describe('An ActorRdfJoinOptionalBind instance', () => {
     let mediatorJoinSelectivity: Mediator<
     Actor<IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>,
-    IActionRdfJoinSelectivity,
-IActorTest,
-IActorRdfJoinSelectivityOutput
->;
-    let mediatorQueryOperation: Mediator<
-      Actor<IActionQueryOperation, IActorTest, IQueryOperationResultBindings>,
-IActionQueryOperation,
-IActorTest,
-IQueryOperationResultBindings
->;
+    IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>;
+    let mediatorQueryOperation: Mediator<Actor<IActionQueryOperation, IActorTest, IQueryOperationResultBindings>,
+    IActionQueryOperation, IActorTest, IQueryOperationResultBindings>;
     let actor: ActorRdfJoinOptionalBind;
 
     beforeEach(() => {
@@ -90,13 +78,12 @@ IQueryOperationResultBindings
         selectivityModifier: 0.1,
         mediatorQueryOperation,
         mediatorJoinSelectivity,
-        mediatorMergeBindingsContext,
       });
     });
 
     describe('getJoinCoefficients', () => {
       it('should handle two entries', async() => {
-        await expect(actor.getJoinCoefficients(
+        expect(await actor.getJoinCoefficients(
           {
             type: 'optional',
             entries: [
@@ -129,7 +116,7 @@ IQueryOperationResultBindings
               variables: [ DF.variable('a') ],
             },
           ],
-        )).resolves.toEqual({
+        )).toEqual({
           iterations: 0.480_000_000_000_000_1,
           persistedItems: 0,
           blockingItems: 0,
@@ -138,7 +125,7 @@ IQueryOperationResultBindings
       });
 
       it('should handle two entries with a lower variable overlap', async() => {
-        await expect(actor.getJoinCoefficients(
+        expect(await actor.getJoinCoefficients(
           {
             type: 'optional',
             entries: [
@@ -171,7 +158,7 @@ IQueryOperationResultBindings
               variables: [ DF.variable('a'), DF.variable('c'), DF.variable('e') ],
             },
           ],
-        )).resolves.toEqual({
+        )).toEqual({
           iterations: 0.480_000_000_000_000_1,
           persistedItems: 0,
           blockingItems: 0,
@@ -213,7 +200,7 @@ IQueryOperationResultBindings
               variables: [ DF.variable('a') ],
             },
           ],
-        )).rejects.toThrow('Actor actor can not bind on Extend and Group operations');
+        )).rejects.toThrowError('Actor actor can not bind on Extend and Group operations');
       });
 
       it('should reject on a right stream of type group', async() => {
@@ -250,11 +237,11 @@ IQueryOperationResultBindings
               variables: [ DF.variable('a') ],
             },
           ],
-        )).rejects.toThrow('Actor actor can not bind on Extend and Group operations');
+        )).rejects.toThrowError('Actor actor can not bind on Extend and Group operations');
       });
 
       it('should not reject on a left stream of type group', async() => {
-        await expect(actor.getJoinCoefficients(
+        expect(await actor.getJoinCoefficients(
           {
             type: 'optional',
             entries: [
@@ -287,7 +274,7 @@ IQueryOperationResultBindings
               variables: [ DF.variable('a') ],
             },
           ],
-        )).resolves.toEqual({
+        )).toEqual({
           iterations: 0.480_000_000_000_000_1,
           persistedItems: 0,
           blockingItems: 0,
@@ -352,7 +339,7 @@ IQueryOperationResultBindings
         const result = await actor.run(action);
 
         // Validate output
-        expect(result.type).toBe('bindings');
+        expect(result.type).toEqual('bindings');
         await expect(result.bindingsStream).toEqualBindingsStream([
           BF.bindings([
             [ DF.variable('a'), DF.literal('1') ],
@@ -370,7 +357,7 @@ IQueryOperationResultBindings
             [ DF.variable('b'), DF.literal('2') ],
           ]),
         ]);
-        await expect(result.metadata()).resolves.toEqual({
+        expect(await result.metadata()).toEqual({
           state: expect.any(MetadataValidationState),
           cardinality: { type: 'estimate', value: 7.2 },
           canContainUndefs: true,

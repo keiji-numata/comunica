@@ -17,7 +17,7 @@ const DF = new DataFactory();
 const BF = new BindingsFactory();
 
 function bindingsToString(b: Bindings): string {
-  // eslint-disable-next-line ts/require-array-sort-compare
+  // eslint-disable-next-line @typescript-eslint/require-array-sort-compare
   const keys = [ ...b.keys() ].sort();
   return keys.map(k => `${k.value}:${b.get(k)!.value}`).toString();
 }
@@ -42,19 +42,14 @@ describe('ActorRdfJoinNestedLoop', () => {
     });
 
     it('should not be able to create new ActorRdfJoinNestedLoop objects without \'new\'', () => {
-      expect(() => {
-        (<any> ActorRdfJoinNestedLoop)();
-      }).toThrow(`Class constructor ActorRdfJoinNestedLoop cannot be invoked without 'new'`);
+      expect(() => { (<any> ActorRdfJoinNestedLoop)(); }).toThrow();
     });
   });
 
   describe('An ActorRdfJoinNestedLoop instance', () => {
     let mediatorJoinSelectivity: Mediator<
     Actor<IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>,
-    IActionRdfJoinSelectivity,
-IActorTest,
-IActorRdfJoinSelectivityOutput
->;
+    IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>;
     let actor: ActorRdfJoinNestedLoop;
     let action: IActionRdfJoin;
     let variables0: RDF.Variable[];
@@ -72,7 +67,7 @@ IActorRdfJoinSelectivityOutput
         entries: [
           {
             output: {
-              bindingsStream: new ArrayIterator<RDF.Bindings>([], { autoStart: false }),
+              bindingsStream: new ArrayIterator([], { autoStart: false }),
               metadata: async() => ({
                 state: new MetadataValidationState(),
                 cardinality: { type: 'estimate', value: 4 },
@@ -87,7 +82,7 @@ IActorRdfJoinSelectivityOutput
           },
           {
             output: {
-              bindingsStream: new ArrayIterator<RDF.Bindings>([], { autoStart: false }),
+              bindingsStream: new ArrayIterator([], { autoStart: false }),
               metadata: async() => ({
                 state: new MetadataValidationState(),
                 cardinality: { type: 'estimate', value: 5 },
@@ -107,17 +102,15 @@ IActorRdfJoinSelectivityOutput
 
     describe('should test', () => {
       afterEach(() => {
-        for (const output of action.entries) {
-          output.output?.bindingsStream?.destroy();
-        }
+        action.entries.forEach(output => output.output?.bindingsStream?.destroy());
       });
 
-      it('should only handle 2 streams', async() => {
+      it('should only handle 2 streams', () => {
         action.entries.push(<any> {});
-        await expect(actor.test(action)).rejects.toBeTruthy();
+        return expect(actor.test(action)).rejects.toBeTruthy();
       });
 
-      it('should handle undefs in left stream', async() => {
+      it('should handle undefs in left stream', () => {
         action.entries[0].output.metadata = async() => ({
           state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 4 },
@@ -126,7 +119,7 @@ IActorRdfJoinSelectivityOutput
           canContainUndefs: true,
           variables: [],
         });
-        await expect(actor.test(action)).resolves
+        return expect(actor.test(action)).resolves
           .toEqual({
             iterations: 20,
             persistedItems: 0,
@@ -135,7 +128,7 @@ IActorRdfJoinSelectivityOutput
           });
       });
 
-      it('should handle undefs in right stream', async() => {
+      it('should handle undefs in right stream', () => {
         action.entries[1].output.metadata = async() => ({
           state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 5 },
@@ -144,7 +137,7 @@ IActorRdfJoinSelectivityOutput
           canContainUndefs: true,
           variables: [],
         });
-        await expect(actor.test(action)).resolves
+        return expect(actor.test(action)).resolves
           .toEqual({
             iterations: 20,
             persistedItems: 0,
@@ -153,7 +146,7 @@ IActorRdfJoinSelectivityOutput
           });
       });
 
-      it('should handle undefs in left and right stream', async() => {
+      it('should handle undefs in left and right stream', () => {
         action.entries[0].output.metadata = async() => ({
           state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 4 },
@@ -170,7 +163,7 @@ IActorRdfJoinSelectivityOutput
           canContainUndefs: true,
           variables: [],
         });
-        await expect(actor.test(action)).resolves
+        return expect(actor.test(action)).resolves
           .toEqual({
             iterations: 20,
             persistedItems: 0,
@@ -180,52 +173,49 @@ IActorRdfJoinSelectivityOutput
       });
 
       it('should generate correct test metadata', async() => {
-        await expect(actor.test(action)).resolves
-          .toHaveProperty('iterations', (await (<any> action.entries[0].output).metadata()).cardinality.value *
+        await expect(actor.test(action)).resolves.toHaveProperty('iterations',
+          (await (<any> action.entries[0].output).metadata()).cardinality.value *
         (await (<any> action.entries[1].output).metadata()).cardinality.value);
       });
     });
 
     it('should generate correct metadata', async() => {
       await actor.run(action).then(async(result: IQueryOperationResultBindings) => {
-        await expect((<any> result).metadata()).resolves.toHaveProperty(
-          'cardinality',
-          { type: 'estimate', value: (await (<any> action.entries[0].output).metadata()).cardinality.value *
-          (await (<any> action.entries[1].output).metadata()).cardinality.value },
-        );
+        await expect((<any> result).metadata()).resolves.toHaveProperty('cardinality',
+          { type: 'estimate',
+            value: (await (<any> action.entries[0].output).metadata()).cardinality.value *
+          (await (<any> action.entries[1].output).metadata()).cardinality.value });
 
         await expect(result.bindingsStream).toEqualBindingsStream([]);
       });
     });
 
-    it('should return an empty stream for empty input', async() => {
-      await actor.run(action).then(async(output: IQueryOperationResultBindings) => {
+    it('should return an empty stream for empty input', () => {
+      return actor.run(action).then(async(output: IQueryOperationResultBindings) => {
         expect((await output.metadata()).variables).toEqual([]);
         await expect(output.bindingsStream).toEqualBindingsStream([]);
       });
     });
 
-    it('should join bindings with matching values', async() => {
+    it('should join bindings with matching values', () => {
       // Clean up the old bindings
-      for (const output of action.entries) {
-        output.output?.bindingsStream?.destroy();
-      }
+      action.entries.forEach(output => output.output?.bindingsStream?.destroy());
 
-      action.entries[0].output.bindingsStream = new ArrayIterator<RDF.Bindings>([
+      action.entries[0].output.bindingsStream = new ArrayIterator([
         BF.bindings([
           [ DF.variable('a'), DF.literal('a') ],
           [ DF.variable('b'), DF.literal('b') ],
         ]),
       ]);
       variables0 = [ DF.variable('a'), DF.variable('b') ];
-      action.entries[1].output.bindingsStream = new ArrayIterator<RDF.Bindings>([
+      action.entries[1].output.bindingsStream = new ArrayIterator([
         BF.bindings([
           [ DF.variable('a'), DF.literal('a') ],
           [ DF.variable('c'), DF.literal('c') ],
         ]),
       ]);
       variables1 = [ DF.variable('a'), DF.variable('c') ];
-      await actor.run(action).then(async(output: IQueryOperationResultBindings) => {
+      return actor.run(action).then(async(output: IQueryOperationResultBindings) => {
         expect((await output.metadata()).variables).toEqual([ DF.variable('a'), DF.variable('b'), DF.variable('c') ]);
         await expect(output.bindingsStream).toEqualBindingsStream([
           BF.bindings([
@@ -237,39 +227,35 @@ IActorRdfJoinSelectivityOutput
       });
     });
 
-    it('should not join bindings with incompatible values', async() => {
+    it('should not join bindings with incompatible values', () => {
       // Clean up the old bindings
-      for (const output of action.entries) {
-        output.output?.bindingsStream?.destroy();
-      }
+      action.entries.forEach(output => output.output?.bindingsStream?.destroy());
 
-      action.entries[0].output.bindingsStream = new ArrayIterator<RDF.Bindings>([
+      action.entries[0].output.bindingsStream = new ArrayIterator([
         BF.bindings([
           [ DF.variable('a'), DF.literal('a') ],
           [ DF.variable('b'), DF.literal('b') ],
         ]),
       ]);
       variables0 = [ DF.variable('a'), DF.variable('b') ];
-      action.entries[1].output.bindingsStream = new ArrayIterator<RDF.Bindings>([
+      action.entries[1].output.bindingsStream = new ArrayIterator([
         BF.bindings([
           [ DF.variable('a'), DF.literal('d') ],
           [ DF.variable('c'), DF.literal('c') ],
         ]),
       ]);
       variables1 = [ DF.variable('a'), DF.variable('c') ];
-      await actor.run(action).then(async(output: IQueryOperationResultBindings) => {
+      return actor.run(action).then(async(output: IQueryOperationResultBindings) => {
         expect((await output.metadata()).variables).toEqual([ DF.variable('a'), DF.variable('b'), DF.variable('c') ]);
         await expect(output.bindingsStream).toEqualBindingsStream([]);
       });
     });
 
-    it('should join multiple bindings', async() => {
+    it('should join multiple bindings', () => {
       // Clean up the old bindings
-      for (const output of action.entries) {
-        output.output?.bindingsStream?.destroy();
-      }
+      action.entries.forEach(output => output.output?.bindingsStream?.destroy());
 
-      action.entries[0].output.bindingsStream = new ArrayIterator<RDF.Bindings>([
+      action.entries[0].output.bindingsStream = new ArrayIterator([
         BF.bindings([
           [ DF.variable('a'), DF.literal('1') ],
           [ DF.variable('b'), DF.literal('2') ],
@@ -296,7 +282,7 @@ IActorRdfJoinSelectivityOutput
         ]),
       ]);
       variables0 = [ DF.variable('a'), DF.variable('b') ];
-      action.entries[1].output.bindingsStream = new ArrayIterator<RDF.Bindings>([
+      action.entries[1].output.bindingsStream = new ArrayIterator([
         BF.bindings([
           [ DF.variable('a'), DF.literal('1') ],
           [ DF.variable('c'), DF.literal('4') ],
@@ -323,7 +309,7 @@ IActorRdfJoinSelectivityOutput
         ]),
       ]);
       variables1 = [ DF.variable('a'), DF.variable('c') ];
-      await actor.run(action).then(async(output: IQueryOperationResultBindings) => {
+      return actor.run(action).then(async(output: IQueryOperationResultBindings) => {
         const expected = [
           BF.bindings([
             [ DF.variable('a'), DF.literal('1') ],
@@ -368,18 +354,18 @@ IActorRdfJoinSelectivityOutput
         ];
         expect((await output.metadata()).variables).toEqual([ DF.variable('a'), DF.variable('b'), DF.variable('c') ]);
         // Mapping to string and sorting since we don't know order (well, we sort of know, but we might not!)
+        // eslint-disable-next-line @typescript-eslint/require-array-sort-compare
         expect((await arrayifyStream(output.bindingsStream)).map(bindingsToString).sort())
+          // eslint-disable-next-line @typescript-eslint/require-array-sort-compare
           .toEqual(expected.map(bindingsToString).sort());
       });
     });
 
-    it('should join multiple bindings with undefs', async() => {
+    it('should join multiple bindings with undefs', () => {
       // Clean up the old bindings
-      for (const output of action.entries) {
-        output.output?.bindingsStream?.destroy();
-      }
+      action.entries.forEach(output => output.output?.bindingsStream?.destroy());
 
-      action.entries[0].output.bindingsStream = new ArrayIterator<RDF.Bindings>([
+      action.entries[0].output.bindingsStream = new ArrayIterator([
         BF.bindings([
           [ DF.variable('a'), DF.literal('1') ],
           [ DF.variable('b'), DF.literal('2') ],
@@ -390,7 +376,7 @@ IActorRdfJoinSelectivityOutput
         ]),
       ]);
       variables0 = [ DF.variable('a'), DF.variable('b') ];
-      action.entries[1].output.bindingsStream = new ArrayIterator<RDF.Bindings>([
+      action.entries[1].output.bindingsStream = new ArrayIterator([
         BF.bindings([
           [ DF.variable('a'), DF.literal('1') ],
           [ DF.variable('c'), DF.literal('4') ],
@@ -408,7 +394,7 @@ IActorRdfJoinSelectivityOutput
         variables: variables1,
       });
       variables1 = [ DF.variable('a'), DF.variable('c') ];
-      await actor.run(action).then(async(output: IQueryOperationResultBindings) => {
+      return actor.run(action).then(async(output: IQueryOperationResultBindings) => {
         const expected = [
           BF.bindings([
             [ DF.variable('a'), DF.literal('1') ],
@@ -428,7 +414,9 @@ IActorRdfJoinSelectivityOutput
         ];
         expect((await output.metadata()).variables).toEqual([ DF.variable('a'), DF.variable('b'), DF.variable('c') ]);
         // Mapping to string and sorting since we don't know order (well, we sort of know, but we might not!)
+        // eslint-disable-next-line @typescript-eslint/require-array-sort-compare
         expect((await arrayifyStream(output.bindingsStream)).map(bindingsToString).sort())
+          // eslint-disable-next-line @typescript-eslint/require-array-sort-compare
           .toEqual(expected.map(bindingsToString).sort());
       });
     });

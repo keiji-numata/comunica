@@ -19,7 +19,7 @@ describe('adjust date duration', () => {
    */
 
   // ADJUST has jet to be implemented
-  // eslint-disable-next-line jest/no-disabled-tests
+  // eslint-disable-next-line mocha/no-skipped-tests
   describe.skip('respect the adjust_date-01 spec', () => {
     runFuncTestTable({
       operation: 'ADJUST',

@@ -1,4 +1,3 @@
-import type { BindingsFactory } from '@comunica/bindings-factory';
 import type { MediatorFunctionFactory } from '@comunica/bus-function-factory';
 import type { MediatorQueryOperation } from '@comunica/bus-query-operation';
 import type { IExpressionEvaluator } from '@comunica/expression-evaluator';
@@ -14,10 +13,8 @@ export class ExpressionEvaluator implements IExpressionEvaluator {
     public readonly expr: E.Expression,
     public readonly mediatorFunctionFactory: MediatorFunctionFactory,
     public readonly mediatorQueryOperation: MediatorQueryOperation,
-    public readonly bindingsFactory: BindingsFactory,
   ) {
-    this.internalEvaluator =
-      new InternalEvaluator(context, mediatorFunctionFactory, mediatorQueryOperation, bindingsFactory);
+    this.internalEvaluator = new InternalEvaluator(context, mediatorFunctionFactory, mediatorQueryOperation);
   }
 
   public async evaluate(mapping: RDF.Bindings): Promise<RDF.Term> {

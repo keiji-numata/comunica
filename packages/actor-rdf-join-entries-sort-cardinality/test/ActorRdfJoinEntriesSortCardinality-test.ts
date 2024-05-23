@@ -20,27 +20,27 @@ describe('ActorRdfJoinEntriesSortCardinality', () => {
 
     describe('test', () => {
       it('should return true', async() => {
-        await expect(actor.test(<any> {})).resolves.toBeTruthy();
+        expect(await actor.test(<any> {})).toBeTruthy();
       });
     });
 
     describe('run', () => {
       it('should handle zero entries', async() => {
-        await expect(actor.run({
+        expect(await actor.run({
           entries: [],
           context,
-        })).resolves.toEqual({ entries: []});
+        })).toEqual({ entries: []});
       });
 
       it('should handle one entry', async() => {
-        await expect(actor.run({
+        expect(await actor.run({
           entries: [
             <any> {
               metadata: { cardinality: { value: 10 }},
             },
           ],
           context,
-        })).resolves.toEqual({
+        })).toEqual({
           entries: [
             {
               metadata: { cardinality: { value: 10 }},
@@ -50,14 +50,14 @@ describe('ActorRdfJoinEntriesSortCardinality', () => {
       });
 
       it('should handle multiple entries', async() => {
-        await expect(actor.run({
+        expect(await actor.run({
           entries: [
             <any> { metadata: { cardinality: { value: 20 }}},
             <any> { metadata: { cardinality: { value: 10 }}},
             <any> { metadata: { cardinality: { value: 30 }}},
           ],
           context,
-        })).resolves.toEqual({
+        })).toEqual({
           entries: [
             { metadata: { cardinality: { value: 10 }}},
             { metadata: { cardinality: { value: 20 }}},

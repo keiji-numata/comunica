@@ -1,17 +1,18 @@
 {
   "name": "@comunica/data-factory",
-  "version": "3.0.1",
+  "version": "2.7.0",
   "description": "RDFJS DataFactory utilities",
-  "license": "MIT",
-  "homepage": "https://comunica.dev/",
+  "main": "lib/index.js",
+  "typings": "lib/index",
   "repository": {
     "type": "git",
     "url": "https://github.com/comunica/comunica.git",
     "directory": "packages/data-factory"
   },
-  "bugs": {
-    "url": "https://github.com/comunica/comunica/issues"
+  "publishConfig": {
+    "access": "public"
   },
+  "sideEffects": false,
   "keywords": [
     "semantic",
     "actor",
@@ -19,21 +20,20 @@
     "events",
     "messages"
   ],
-  "sideEffects": false,
-  "main": "lib/index.js",
-  "typings": "lib/index",
-  "publishConfig": {
-    "access": "public"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/comunica/comunica/issues"
   },
+  "homepage": "https://comunica.dev/",
   "files": [
     "lib/**/*.d.ts",
     "lib/**/*.js",
     "lib/**/*.js.map"
   ],
-  "scripts": {
-    "build": "node \"../../node_modules/typescript/bin/tsc\""
-  },
   "dependencies": {
     "@rdfjs/types": "*"
+  },
+  "scripts": {
+    "build": "node \"../../node_modules/typescript/bin/tsc\""
   }
 }

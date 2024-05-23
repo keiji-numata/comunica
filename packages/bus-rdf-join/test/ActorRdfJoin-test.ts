@@ -20,10 +20,7 @@ class Dummy extends ActorRdfJoin {
   public constructor(
     mediatorJoinSelectivity: Mediator<
     Actor<IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>,
-    IActionRdfJoinSelectivity,
-IActorTest,
-IActorRdfJoinSelectivityOutput
->,
+    IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>,
     limitEntries?: number,
     limitEntriesMin?: boolean,
     canHandleUndefs?: boolean,
@@ -69,10 +66,7 @@ describe('ActorRdfJoin', () => {
   let action: IActionRdfJoin;
   let mediatorJoinSelectivity: Mediator<
   Actor<IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>,
-  IActionRdfJoinSelectivity,
-IActorTest,
-IActorRdfJoinSelectivityOutput
->;
+  IActionRdfJoinSelectivity, IActorTest, IActorRdfJoinSelectivityOutput>;
   let variables0: RDF.Variable[];
   let variables1: RDF.Variable[];
 
@@ -122,9 +116,8 @@ IActorRdfJoinSelectivityOutput
         BF.bindings([
           [ DF.variable('x'), DF.namedNode('http://www.example.org/instance#a') ],
           [ DF.variable('y'), DF.literal('XYZ', DF.namedNode('ex:abc')) ],
-        ]),
-        [ DF.variable('x'), DF.variable('y') ],
-      )).toBe('http://www.example.org/instance#a"XYZ"^^ex:abc');
+        ]), [ DF.variable('x'), DF.variable('y') ],
+      )).toEqual('http://www.example.org/instance#a"XYZ"^^ex:abc');
     });
 
     it('should not let hash being influenced by a variable that is not present in bindings', () => {
@@ -132,9 +125,8 @@ IActorRdfJoinSelectivityOutput
         BF.bindings([
           [ DF.variable('x'), DF.namedNode('http://www.example.org/instance#a') ],
           [ DF.variable('y'), DF.literal('XYZ', DF.namedNode('ex:abc')) ],
-        ]),
-        [ DF.variable('x'), DF.variable('y'), DF.variable('z') ],
-      )).toBe('http://www.example.org/instance#a"XYZ"^^ex:abc');
+        ]), [ DF.variable('x'), DF.variable('y'), DF.variable('z') ],
+      )).toEqual('http://www.example.org/instance#a"XYZ"^^ex:abc');
     });
   });
 
@@ -291,7 +283,7 @@ IActorRdfJoinSelectivityOutput
 
   describe('joinBindings', () => {
     it('should return for no bindings', () => {
-      expect(ActorRdfJoin.joinBindings()).toBeNull();
+      return expect(ActorRdfJoin.joinBindings()).toBeNull();
     });
 
     it('should return for one binding', () => {
@@ -299,7 +291,7 @@ IActorRdfJoinSelectivityOutput
         [ DF.variable('x'), DF.literal('a') ],
         [ DF.variable('y'), DF.literal('b') ],
       ]);
-      expect(ActorRdfJoin.joinBindings(single)).toEqual(single);
+      return expect(ActorRdfJoin.joinBindings(single)).toEqual(single);
     });
 
     it('should return the right binding if the left is empty', () => {
@@ -308,7 +300,7 @@ IActorRdfJoinSelectivityOutput
         [ DF.variable('x'), DF.literal('a') ],
         [ DF.variable('y'), DF.literal('b') ],
       ]);
-      expect(ActorRdfJoin.joinBindings(left, right)).toEqual(right);
+      return expect(ActorRdfJoin.joinBindings(left, right)).toEqual(right);
     });
 
     it('should return the left binding if the right is empty', () => {
@@ -317,7 +309,7 @@ IActorRdfJoinSelectivityOutput
         [ DF.variable('y'), DF.literal('b') ],
       ]);
       const right = BF.bindings();
-      expect(ActorRdfJoin.joinBindings(left, right)).toEqual(left);
+      return expect(ActorRdfJoin.joinBindings(left, right)).toEqual(left);
     });
 
     it('should join 2 bindings with no overlapping variables', () => {
@@ -335,7 +327,7 @@ IActorRdfJoinSelectivityOutput
         [ DF.variable('v'), DF.literal('d') ],
         [ DF.variable('w'), DF.literal('e') ],
       ]);
-      expect(ActorRdfJoin.joinBindings(left, right)).toEqual(result);
+      return expect(ActorRdfJoin.joinBindings(left, right)).toEqual(result);
     });
 
     it('should join 2 bindings with overlapping variables', () => {
@@ -352,7 +344,7 @@ IActorRdfJoinSelectivityOutput
         [ DF.variable('y'), DF.literal('b') ],
         [ DF.variable('w'), DF.literal('e') ],
       ]);
-      expect(ActorRdfJoin.joinBindings(left, right)).toEqual(result);
+      return expect(ActorRdfJoin.joinBindings(left, right)).toEqual(result);
     });
 
     it('should not join bindings with conflicting mappings', () => {
@@ -364,29 +356,29 @@ IActorRdfJoinSelectivityOutput
         [ DF.variable('x'), DF.literal('b') ],
         [ DF.variable('w'), DF.literal('e') ],
       ]);
-      expect(ActorRdfJoin.joinBindings(left, right)).toBeNull();
+      return expect(ActorRdfJoin.joinBindings(left, right)).toBeNull();
     });
   });
 
   describe('getCardinality', () => {
     it('should handle 0 metadata', () => {
-      expect(ActorRdfJoin.getCardinality(<any>{ cardinality: { type: 'exact', value: 0 }}))
+      return expect(ActorRdfJoin.getCardinality(<any>{ cardinality: { type: 'exact', value: 0 }}))
         .toEqual({ type: 'exact', value: 0 });
     });
 
     it('should handle 5 metadata', () => {
-      expect(ActorRdfJoin.getCardinality(<any>{ cardinality: { type: 'exact', value: 5 }}))
+      return expect(ActorRdfJoin.getCardinality(<any>{ cardinality: { type: 'exact', value: 5 }}))
         .toEqual({ type: 'exact', value: 5 });
     });
   });
 
   describe('getMetadatas', () => {
     it('should handle no entries', async() => {
-      await expect(ActorRdfJoin.getMetadatas([])).resolves.toEqual([]);
+      expect(await ActorRdfJoin.getMetadatas([])).toEqual([]);
     });
 
     it('should handle entries', async() => {
-      await expect(ActorRdfJoin.getMetadatas(action.entries)).resolves.toMatchObject([
+      expect(await ActorRdfJoin.getMetadatas(action.entries)).toMatchObject([
         { cardinality: { type: 'estimate', value: 10 }, canContainUndefs: false, variables: []},
         { cardinality: { type: 'estimate', value: 5 }, canContainUndefs: false, variables: []},
       ]);
@@ -404,26 +396,20 @@ IActorRdfJoinSelectivityOutput
           canContainUndefs: false,
           variables: [],
         },
-        {
-          state: new MetadataValidationState(),
+        { state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 10 },
           pageSize: 10,
           canContainUndefs: false,
-          variables: [],
-        },
-        {
-          state: new MetadataValidationState(),
+          variables: []},
+        { state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 10 },
           canContainUndefs: false,
-          variables: [],
-        },
-        {
-          state: new MetadataValidationState(),
+          variables: []},
+        { state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 10 },
           requestTime: 10,
           canContainUndefs: false,
-          variables: [],
-        },
+          variables: []},
       ])).toEqual([
         0,
         0,
@@ -444,26 +430,20 @@ IActorRdfJoinSelectivityOutput
           canContainUndefs: false,
           variables: [],
         },
-        {
-          state: new MetadataValidationState(),
+        { state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 10 },
           pageSize: 10,
           canContainUndefs: false,
-          variables: [],
-        },
-        {
-          state: new MetadataValidationState(),
+          variables: []},
+        { state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 10 },
           canContainUndefs: false,
-          variables: [],
-        },
-        {
-          state: new MetadataValidationState(),
+          variables: []},
+        { state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 10 },
           requestTime: 10,
           canContainUndefs: false,
-          variables: [],
-        },
+          variables: []},
       ])).toEqual([
         1,
         0,
@@ -482,12 +462,12 @@ IActorRdfJoinSelectivityOutput
 
     it('should return partial metadata if it is fully valid', async() => {
       const state = new MetadataValidationState();
-      await expect(instance.constructResultMetadata([], [], action.context, {
+      expect(await instance.constructResultMetadata([], [], action.context, {
         state,
         cardinality: { type: 'estimate', value: 10 },
         canContainUndefs: true,
         pageSize: 100,
-      })).resolves.toEqual({
+      })).toEqual({
         state,
         cardinality: { type: 'estimate', value: 10 },
         canContainUndefs: true,
@@ -497,58 +477,46 @@ IActorRdfJoinSelectivityOutput
     });
 
     it('should return not use empty partial metadata', async() => {
-      await expect(instance.constructResultMetadata([], [
-        {
-          state: new MetadataValidationState(),
+      expect(await instance.constructResultMetadata([], [
+        { state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 10 },
           canContainUndefs: false,
-          variables: [],
-        },
-        {
-          state: new MetadataValidationState(),
+          variables: []},
+        { state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 2 },
           canContainUndefs: true,
-          variables: [],
-        },
-      ], action.context, {})).resolves.toEqual({
+          variables: []},
+      ], action.context, {})).toEqual({
         state: expect.any(MetadataValidationState),
         cardinality: { type: 'estimate', value: 20 * 0.8 },
         canContainUndefs: true,
         variables: [],
       });
-      await expect(instance.constructResultMetadata([], [
-        {
-          state: new MetadataValidationState(),
+      expect(await instance.constructResultMetadata([], [
+        { state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 10 },
           canContainUndefs: true,
-          variables: [],
-        },
-        {
-          state: new MetadataValidationState(),
+          variables: []},
+        { state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 2 },
           canContainUndefs: true,
-          variables: [],
-        },
-      ], action.context, {})).resolves.toEqual({
+          variables: []},
+      ], action.context, {})).toEqual({
         state: expect.any(MetadataValidationState),
         cardinality: { type: 'estimate', value: 20 * 0.8 },
         canContainUndefs: true,
         variables: [],
       });
-      await expect(instance.constructResultMetadata([], [
-        {
-          state: new MetadataValidationState(),
+      expect(await instance.constructResultMetadata([], [
+        { state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 10 },
           canContainUndefs: false,
-          variables: [],
-        },
-        {
-          state: new MetadataValidationState(),
+          variables: []},
+        { state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 2 },
           canContainUndefs: false,
-          variables: [],
-        },
-      ], action.context, {})).resolves.toEqual({
+          variables: []},
+      ], action.context, {})).toEqual({
         state: expect.any(MetadataValidationState),
         cardinality: { type: 'estimate', value: 20 * 0.8 },
         canContainUndefs: false,
@@ -557,20 +525,16 @@ IActorRdfJoinSelectivityOutput
     });
 
     it('should combine exact cardinalities', async() => {
-      await expect(instance.constructResultMetadata([], [
-        {
-          state: new MetadataValidationState(),
+      expect(await instance.constructResultMetadata([], [
+        { state: new MetadataValidationState(),
           cardinality: { type: 'exact', value: 10 },
           canContainUndefs: false,
-          variables: [],
-        },
-        {
-          state: new MetadataValidationState(),
+          variables: []},
+        { state: new MetadataValidationState(),
           cardinality: { type: 'exact', value: 2 },
           canContainUndefs: true,
-          variables: [],
-        },
-      ], action.context, {})).resolves.toEqual({
+          variables: []},
+      ], action.context, {})).toEqual({
         state: expect.any(MetadataValidationState),
         cardinality: { type: 'exact', value: 20 * 0.8 },
         canContainUndefs: true,
@@ -579,20 +543,16 @@ IActorRdfJoinSelectivityOutput
     });
 
     it('should combine exact and estimate cardinalities', async() => {
-      await expect(instance.constructResultMetadata([], [
-        {
-          state: new MetadataValidationState(),
+      expect(await instance.constructResultMetadata([], [
+        { state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 10 },
           canContainUndefs: false,
-          variables: [],
-        },
-        {
-          state: new MetadataValidationState(),
+          variables: []},
+        { state: new MetadataValidationState(),
           cardinality: { type: 'exact', value: 2 },
           canContainUndefs: true,
-          variables: [],
-        },
-      ], action.context, {})).resolves.toEqual({
+          variables: []},
+      ], action.context, {})).toEqual({
         state: expect.any(MetadataValidationState),
         cardinality: { type: 'estimate', value: 20 * 0.8 },
         canContainUndefs: true,
@@ -601,20 +561,18 @@ IActorRdfJoinSelectivityOutput
     });
 
     it('should join variables', async() => {
-      await expect(instance.constructResultMetadata([], [
-        {
-          state: new MetadataValidationState(),
+      expect(await instance.constructResultMetadata([], [
+        { state: new MetadataValidationState(),
           cardinality: { type: 'exact', value: 10 },
           canContainUndefs: false,
-          variables: [ DF.variable('a') ],
-        },
+          variables: [ DF.variable('a') ]},
         {
           state: new MetadataValidationState(),
           cardinality: { type: 'exact', value: 2 },
           canContainUndefs: true,
           variables: [ DF.variable('a'), DF.variable('b') ],
         },
-      ], action.context, {})).resolves.toEqual({
+      ], action.context, {})).toEqual({
         state: expect.any(MetadataValidationState),
         cardinality: { type: 'exact', value: 20 * 0.8 },
         canContainUndefs: true,
@@ -625,18 +583,14 @@ IActorRdfJoinSelectivityOutput
     it('should handle metadata invalidation', async() => {
       const state1 = new MetadataValidationState();
       const metadataOut = await instance.constructResultMetadata([], [
-        {
-          state: state1,
+        { state: state1,
           cardinality: { type: 'estimate', value: 10 },
           canContainUndefs: false,
-          variables: [],
-        },
-        {
-          state: new MetadataValidationState(),
+          variables: []},
+        { state: new MetadataValidationState(),
           cardinality: { type: 'estimate', value: 2 },
           canContainUndefs: true,
-          variables: [],
-        },
+          variables: []},
       ], action.context, {});
       expect(metadataOut.state.valid).toBeTruthy();
 
@@ -658,41 +612,41 @@ IActorRdfJoinSelectivityOutput
       instance = new Dummy(mediatorJoinSelectivity);
     });
 
-    it('should reject if the logical type does not match', async() => {
+    it('should reject if the logical type does not match', () => {
       action.type = 'optional';
-      await expect(instance.test(action)).rejects.toThrow(`name can only handle logical joins of type 'inner', while 'optional' was given.`);
+      return expect(instance.test(action)).rejects.toThrow(`name can only handle logical joins of type 'inner', while 'optional' was given.`);
     });
 
-    it('should reject if there are 0 entries', async() => {
+    it('should reject if there are 0 entries', () => {
       action.entries = [];
-      await expect(instance.test(action)).rejects.toThrow('name requires at least two join entries.');
+      return expect(instance.test(action)).rejects.toThrow('name requires at least two join entries.');
     });
 
-    it('should reject if there is 1 entry', async() => {
+    it('should reject if there is 1 entry', () => {
       action.entries = [ action.entries[0] ];
-      await expect(instance.test(action)).rejects.toThrow('name requires at least two join entries.');
+      return expect(instance.test(action)).rejects.toThrow('name requires at least two join entries.');
     });
 
-    it('should reject if there are too many entries', async() => {
+    it('should reject if there are too many entries', () => {
       action.entries.push(<any> { bindings: { type: 'bindings' }});
       instance = new Dummy(mediatorJoinSelectivity, 2);
-      await expect(instance.test(action)).rejects.toThrow(`name requires 2 join entries at most. The input contained 3.`);
+      return expect(instance.test(action)).rejects.toThrowError(`name requires 2 join entries at most. The input contained 3.`);
     });
 
-    it('should reject if there are too few entries', async() => {
+    it('should reject if there are too few entries', () => {
       instance = new Dummy(mediatorJoinSelectivity, 3, true);
-      await expect(instance.test(action)).rejects.toThrow(`name requires 3 join entries at least. The input contained 2.`);
+      return expect(instance.test(action)).rejects.toThrowError(`name requires 3 join entries at least. The input contained 2.`);
     });
 
-    it('should throw an error if an entry has an incorrect type', async() => {
+    it('should throw an error if an entry has an incorrect type', () => {
       action.entries.push(<any> { output: { type: 'invalid' }});
       action.entries.push(<any> { output: { type: 'invalid' }});
       instance = new Dummy(mediatorJoinSelectivity, 99);
-      await expect(instance.test(action)).rejects
-        .toThrow(`Invalid type of a join entry: Expected 'bindings' but got 'invalid'`);
+      return expect(instance.test(action)).rejects
+        .toThrowError(`Invalid type of a join entry: Expected 'bindings' but got 'invalid'`);
     });
 
-    it('should return a value if both metadata objects are present', async() => {
+    it('should return a value if both metadata objects are present', () => {
       action.entries[0].output.metadata = () => Promise.resolve({
         state: new MetadataValidationState(),
         cardinality: { type: 'estimate', value: 5 },
@@ -705,32 +659,32 @@ IActorRdfJoinSelectivityOutput
         canContainUndefs: false,
         variables: [],
       });
-      await expect(instance.test(action)).resolves.toHaveProperty('iterations', 5);
+      return expect(instance.test(action)).resolves.toHaveProperty('iterations', 5);
     });
 
-    it('should fail on undefs in left stream', async() => {
+    it('should fail on undefs in left stream', () => {
       action.entries[0].output.metadata = () => Promise.resolve({
         state: new MetadataValidationState(),
         cardinality: { type: 'estimate', value: 5 },
         canContainUndefs: true,
         variables: [],
       });
-      await expect(instance.test(action)).rejects
+      return expect(instance.test(action)).rejects
         .toThrow(new Error('Actor name can not join streams containing undefs'));
     });
 
-    it('should fail on undefs in right stream', async() => {
+    it('should fail on undefs in right stream', () => {
       action.entries[1].output.metadata = () => Promise.resolve({
         state: new MetadataValidationState(),
         cardinality: { type: 'estimate', value: 5 },
         canContainUndefs: true,
         variables: [],
       });
-      await expect(instance.test(action)).rejects
+      return expect(instance.test(action)).rejects
         .toThrow(new Error('Actor name can not join streams containing undefs'));
     });
 
-    it('should fail on undefs in left and right stream', async() => {
+    it('should fail on undefs in left and right stream', () => {
       action.entries[0].output.metadata = () => Promise.resolve({
         state: new MetadataValidationState(),
         cardinality: { type: 'estimate', value: 5 },
@@ -743,7 +697,7 @@ IActorRdfJoinSelectivityOutput
         canContainUndefs: true,
         variables: [],
       });
-      await expect(instance.test(action)).rejects
+      return expect(instance.test(action)).rejects
         .toThrow(new Error('Actor name can not join streams containing undefs'));
     });
   });
@@ -751,14 +705,14 @@ IActorRdfJoinSelectivityOutput
   describe('test with undefs', () => {
     const instance = new Dummy(mediatorJoinSelectivity, undefined, undefined, true);
 
-    it('should handle undefs in left stream', async() => {
+    it('should handle undefs in left stream', () => {
       action.entries[0].output.metadata = () => Promise.resolve({
         state: new MetadataValidationState(),
         cardinality: { type: 'estimate', value: 5 },
         canContainUndefs: true,
         variables: [],
       });
-      await expect(instance.test(action)).resolves
+      return expect(instance.test(action)).resolves
         .toEqual({
           iterations: 5,
           persistedItems: 2,
@@ -767,14 +721,14 @@ IActorRdfJoinSelectivityOutput
         });
     });
 
-    it('should handle undefs in right stream', async() => {
+    it('should handle undefs in right stream', () => {
       action.entries[1].output.metadata = () => Promise.resolve({
         state: new MetadataValidationState(),
         cardinality: { type: 'estimate', value: 5 },
         canContainUndefs: true,
         variables: [],
       });
-      await expect(instance.test(action)).resolves
+      return expect(instance.test(action)).resolves
         .toEqual({
           iterations: 5,
           persistedItems: 2,
@@ -783,7 +737,7 @@ IActorRdfJoinSelectivityOutput
         });
     });
 
-    it('should handle undefs in left and right stream', async() => {
+    it('should handle undefs in left and right stream', () => {
       action.entries[0].output.metadata = () => Promise.resolve({
         state: new MetadataValidationState(),
         cardinality: { type: 'estimate', value: 5 },
@@ -796,7 +750,7 @@ IActorRdfJoinSelectivityOutput
         canContainUndefs: true,
         variables: [],
       });
-      await expect(instance.test(action)).resolves
+      return expect(instance.test(action)).resolves
         .toEqual({
           iterations: 5,
           persistedItems: 2,
@@ -817,7 +771,7 @@ IActorRdfJoinSelectivityOutput
       const runOutput = await instance.run(action);
       const innerOutput = (await instance.getOutput(action)).result;
       expect((<any> runOutput).dummy).toEqual(innerOutput.dummy);
-      await expect(runOutput.metadata()).resolves.toEqual({
+      expect(await runOutput.metadata()).toEqual({
         ...await innerOutput.metadata(),
         state: expect.any(MetadataValidationState),
       });
@@ -837,7 +791,7 @@ IActorRdfJoinSelectivityOutput
         variables: [],
       });
       await instance.run(action).then(async(result: any) => {
-        return await expect(result.metadata()).resolves.toEqual({
+        return expect(await result.metadata()).toEqual({
           state: expect.any(MetadataValidationState),
           cardinality: { type: 'estimate', value: 40 },
           canContainUndefs: true,

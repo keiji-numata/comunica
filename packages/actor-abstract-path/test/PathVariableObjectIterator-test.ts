@@ -45,7 +45,7 @@ describe('PathVariableObjectIterator', () => {
 
     await expect(new Promise((resolve, reject) => {
       iterator.on('end', resolve);
-      iterator.on('error', (e) => {
+      iterator.on('error', e => {
         iterator.close();
         iterator.destroy();
         reject(e);
@@ -93,8 +93,8 @@ describe('PathVariableObjectIterator', () => {
     iterator.close();
     await new Promise(setImmediate);
 
-    expect(createdBindingsStreams).toHaveLength(1);
-    expect(createdBindingsStreams[0].destroy).toHaveBeenCalledTimes(1);
+    expect(createdBindingsStreams.length).toEqual(1);
+    expect(createdBindingsStreams[0].destroy).toHaveBeenCalled();
   });
 
   it('removes duplicates', async() => {
@@ -116,7 +116,7 @@ describe('PathVariableObjectIterator', () => {
       true,
     );
 
-    await expect(arrayifyStream(iterator)).resolves.toEqual([
+    expect(await arrayifyStream(iterator)).toEqual([
       DF.namedNode('ex:s'),
       DF.namedNode('ex:a'),
       DF.namedNode('ex:b'),

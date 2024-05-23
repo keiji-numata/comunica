@@ -1,6 +1,6 @@
 import { BindingsFactory } from '@comunica/bindings-factory';
-import { ActorQueryOperation } from '@comunica/bus-query-operation';
 import { ActionContext, Bus } from '@comunica/core';
+import type { IQueryOperationResultBindings } from '@comunica/types';
 import { ArrayIterator } from 'asynciterator';
 import { DataFactory } from 'rdf-data-factory';
 import { ActorQueryOperationNop } from '../lib/ActorQueryOperationNop';
@@ -8,11 +8,6 @@ import '@comunica/jest';
 
 const DF = new DataFactory();
 const BF = new BindingsFactory();
-const mediatorMergeBindingsContext: any = {
-  mediate(arg: any) {
-    return {};
-  },
-};
 
 describe('ActorQueryOperationNop', () => {
   let bus: any;
@@ -40,25 +35,26 @@ describe('ActorQueryOperationNop', () => {
     let actor: ActorQueryOperationNop;
 
     beforeEach(() => {
-      actor = new ActorQueryOperationNop({ name: 'actor', bus, mediatorQueryOperation, mediatorMergeBindingsContext });
+      actor = new ActorQueryOperationNop({ name: 'actor', bus, mediatorQueryOperation });
     });
 
-    it('should test on nop', async() => {
+    it('should test on nop', () => {
       const op: any = { operation: { type: 'nop' }, context: new ActionContext() };
-      await expect(actor.test(op)).resolves.toBeTruthy();
+      return expect(actor.test(op)).resolves.toBeTruthy();
     });
 
-    it('should not test on non-nop', async() => {
+    it('should not test on non-nop', () => {
       const op: any = { operation: { type: 'some-other-type' }, context: new ActionContext() };
-      await expect(actor.test(op)).rejects.toBeTruthy();
+      return expect(actor.test(op)).rejects.toBeTruthy();
     });
 
-    it('should run', async() => {
+    it('should run', () => {
       const op: any = { operation: { type: 'nop' }, context: new ActionContext() };
-      const output = ActorQueryOperation.getSafeBindings(await actor.run(op));
-      await expect(output.bindingsStream).toEqualBindingsStream([ BF.bindings() ]);
-      await expect(output.metadata()).resolves
-        .toMatchObject({ cardinality: { type: 'exact', value: 1 }, canContainUndefs: false, variables: []});
+      return actor.run(op).then(async(output: IQueryOperationResultBindings) => {
+        await expect(output.bindingsStream).toEqualBindingsStream([ BF.bindings() ]);
+        expect(await output.metadata())
+          .toMatchObject({ cardinality: { type: 'exact', value: 1 }, canContainUndefs: false, variables: []});
+      });
     });
   });
 });

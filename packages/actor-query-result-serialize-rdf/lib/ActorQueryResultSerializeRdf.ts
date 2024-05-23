@@ -1,14 +1,8 @@
-import type {
-  IActorQueryResultSerializeArgs,
-  IActorQueryResultSerializeOutput,
-  IActionSparqlSerialize,
-} from '@comunica/bus-query-result-serialize';
+import type { IActorQueryResultSerializeArgs, IActorQueryResultSerializeOutput,
+  IActionSparqlSerialize } from '@comunica/bus-query-result-serialize';
 import { ActorQueryResultSerialize } from '@comunica/bus-query-result-serialize';
-import type {
-  MediatorRdfSerializeHandle,
-  MediatorRdfSerializeMediaTypeFormats,
-  MediatorRdfSerializeMediaTypes,
-} from '@comunica/bus-rdf-serialize';
+import type { MediatorRdfSerializeHandle, MediatorRdfSerializeMediaTypeFormats,
+  MediatorRdfSerializeMediaTypes } from '@comunica/bus-rdf-serialize';
 import type { IActorTest } from '@comunica/core';
 import type { IActionContext, IQueryOperationResultQuads } from '@comunica/types';
 
@@ -41,7 +35,6 @@ export class ActorQueryResultSerializeRdf extends ActorQueryResultSerialize
     );
     if (!(mediaType in mediaTypes)) {
       throw new Error(`Actor ${this.name} can not handle media type ${mediaType}. All available types: ${
-        // eslint-disable-next-line ts/restrict-template-expressions
         Object.keys(mediaTypes)}`);
     }
     return true;
@@ -60,7 +53,7 @@ export class ActorQueryResultSerializeRdf extends ActorQueryResultSerialize
     })).handle;
   }
 
-  public async testMediaType(_context: IActionContext): Promise<boolean> {
+  public async testMediaType(context: IActionContext): Promise<boolean> {
     return true;
   }
 
@@ -68,7 +61,7 @@ export class ActorQueryResultSerializeRdf extends ActorQueryResultSerialize
     return (await this.mediatorMediaTypeCombiner.mediate({ context, mediaTypes: true })).mediaTypes;
   }
 
-  public async testMediaTypeFormats(_context: IActionContext): Promise<boolean> {
+  public async testMediaTypeFormats(context: IActionContext): Promise<boolean> {
     return true;
   }
 

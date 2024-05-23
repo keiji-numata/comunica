@@ -1,8 +1,5 @@
-import type {
-  IActionSparqlSerialize,
-  IActorQueryResultSerializeFixedMediaTypesArgs,
-  IActorQueryResultSerializeOutput,
-} from '@comunica/bus-query-result-serialize';
+import type { IActionSparqlSerialize, IActorQueryResultSerializeFixedMediaTypesArgs,
+  IActorQueryResultSerializeOutput } from '@comunica/bus-query-result-serialize';
 import {
   ActorQueryResultSerializeFixedMediaTypes,
 } from '@comunica/bus-query-result-serialize';
@@ -40,19 +37,19 @@ export class ActorQueryResultSerializeSparqlTsv extends ActorQueryResultSerializ
 
     // Escape tab, newline and carriage return characters
     return termToString(value)
-      .replaceAll('\t', '\\t')
-      .replaceAll('\n', '\\n')
-      .replaceAll('\r', '\\r');
+      .replace(/\t/gu, '\\t')
+      .replace(/\n/gu, '\\n')
+      .replace(/\r/gu, '\\r');
   }
 
-  public override async testHandleChecked(action: IActionSparqlSerialize, _context: IActionContext): Promise<boolean> {
+  public async testHandleChecked(action: IActionSparqlSerialize, context: IActionContext): Promise<boolean> {
     if (action.type !== 'bindings') {
       throw new Error('This actor can only handle bindings streams.');
     }
     return true;
   }
 
-  public async runHandle(action: IActionSparqlSerialize, _mediaType: string | undefined, _context: IActionContext):
+  public async runHandle(action: IActionSparqlSerialize, mediaType: string | undefined, context: IActionContext):
   Promise<IActorQueryResultSerializeOutput> {
     const bindingsAction = <IQueryOperationResultBindings> action;
 

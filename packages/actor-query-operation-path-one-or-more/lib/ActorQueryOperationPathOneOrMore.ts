@@ -1,24 +1,22 @@
 import { ActorAbstractPath } from '@comunica/actor-abstract-path';
 import { BindingsFactory } from '@comunica/bindings-factory';
-import type { MediatorMergeBindingsContext } from '@comunica/bus-merge-bindings-context';
 import type { IActorQueryOperationTypedMediatedArgs } from '@comunica/bus-query-operation';
 import { ActorQueryOperation } from '@comunica/bus-query-operation';
 import type { IQueryOperationResultBindings, Bindings, IQueryOperationResult, IActionContext } from '@comunica/types';
 import { BufferedIterator, MultiTransformIterator, TransformIterator } from 'asynciterator';
 import { Algebra } from 'sparqlalgebrajs';
 
+const BF = new BindingsFactory();
+
 /**
  * A comunica Path OneOrMore Query Operation Actor.
  */
 export class ActorQueryOperationPathOneOrMore extends ActorAbstractPath {
-  public readonly mediatorMergeBindingsContext: MediatorMergeBindingsContext;
-
-  public constructor(args: IActorQueryOperationPathOneOrMoreArgs) {
+  public constructor(args: IActorQueryOperationTypedMediatedArgs) {
     super(args, Algebra.types.ONE_OR_MORE_PATH);
   }
 
   public async runOperation(operation: Algebra.Path, context: IActionContext): Promise<IQueryOperationResult> {
-    const bindingsFactory = await BindingsFactory.create(this.mediatorMergeBindingsContext, context);
     const distinct = await this.isPathArbitraryLengthDistinct(context, operation);
     if (distinct.operation) {
       return distinct.operation;
@@ -37,7 +35,6 @@ export class ActorQueryOperationPathOneOrMore extends ActorAbstractPath {
         operation.graph,
         context,
         false,
-        bindingsFactory,
       );
       const variables = operation.graph.termType === 'Variable' ? [ objectVar, operation.graph ] : [ objectVar ];
       return {
@@ -82,7 +79,6 @@ export class ActorQueryOperationPathOneOrMore extends ActorAbstractPath {
                   {},
                   it,
                   { count: 0 },
-                  bindingsFactory,
                 );
                 return it.transform<Bindings>({
                   transform(item, next, push) {
@@ -93,16 +89,15 @@ export class ActorQueryOperationPathOneOrMore extends ActorAbstractPath {
                     next();
                   },
                 });
-              },
-              { maxBufferSize: 128 },
+              }, { maxBufferSize: 128 },
             );
           },
           autoStart: false,
         },
       );
       const variables = operation.graph.termType === 'Variable' ?
-          [ subjectVar, objectVar, operation.graph ] :
-          [ subjectVar, objectVar ];
+        [ subjectVar, objectVar, operation.graph ] :
+        [ subjectVar, objectVar ];
       return {
         type: 'bindings',
         bindingsStream,
@@ -132,8 +127,8 @@ export class ActorQueryOperationPathOneOrMore extends ActorAbstractPath {
       filter: item => operation.object.equals(item.get(variable)),
       transform(item, next, push) {
         const binding = operation.graph.termType === 'Variable' ?
-          bindingsFactory.bindings([[ operation.graph, item.get(operation.graph)! ]]) :
-          bindingsFactory.bindings();
+          BF.bindings([[ operation.graph, item.get(operation.graph)! ]]) :
+          BF.bindings();
         push(binding);
         next();
       },
@@ -149,9 +144,3 @@ export class ActorQueryOperationPathOneOrMore extends ActorAbstractPath {
   }
 }
 
-export interface IActorQueryOperationPathOneOrMoreArgs extends IActorQueryOperationTypedMediatedArgs {
-  /**
-   * A mediator for creating binding context merge handlers
-   */
-  mediatorMergeBindingsContext: MediatorMergeBindingsContext;
-}

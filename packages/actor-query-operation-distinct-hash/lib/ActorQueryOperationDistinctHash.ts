@@ -5,13 +5,8 @@ import {
   ActorQueryOperationTypedMediated,
 } from '@comunica/bus-query-operation';
 import type { IActorTest } from '@comunica/core';
-import type {
-  Bindings,
-  BindingsStream,
-  IActionContext,
-  IQueryOperationResult,
-  IQueryOperationResultBindings,
-} from '@comunica/types';
+import type { Bindings, BindingsStream, IActionContext,
+  IQueryOperationResult, IQueryOperationResultBindings } from '@comunica/types';
 import type { Algebra } from 'sparqlalgebrajs';
 
 /**
@@ -24,7 +19,7 @@ export class ActorQueryOperationDistinctHash extends ActorQueryOperationTypedMed
     super(args, 'distinct');
   }
 
-  public async testOperation(_operation: Algebra.Distinct, _context: IActionContext): Promise<IActorTest> {
+  public async testOperation(operation: Algebra.Distinct, context: IActionContext): Promise<IActorTest> {
     return true;
   }
 
@@ -51,7 +46,7 @@ export class ActorQueryOperationDistinctHash extends ActorQueryOperationTypedMed
     const hashes: Record<string, boolean> = {};
     return (bindings: Bindings) => {
       const hash: string = hashFunction(bindings);
-
+      // eslint-disable-next-line no-return-assign
       return !(hash in hashes) && (hashes[hash] = true);
     };
   }

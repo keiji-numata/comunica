@@ -1,8 +1,5 @@
-import type {
-  IActionRdfMetadataAccumulate,
-  IActorRdfMetadataAccumulateOutput,
-  IActorRdfMetadataAccumulateArgs,
-} from '@comunica/bus-rdf-metadata-accumulate';
+import type { IActionRdfMetadataAccumulate, IActorRdfMetadataAccumulateOutput,
+  IActorRdfMetadataAccumulateArgs } from '@comunica/bus-rdf-metadata-accumulate';
 import { ActorRdfMetadataAccumulate } from '@comunica/bus-rdf-metadata-accumulate';
 import type { IActorTest } from '@comunica/core';
 
@@ -14,7 +11,7 @@ export class ActorRdfMetadataAccumulateRequestTime extends ActorRdfMetadataAccum
     super(args);
   }
 
-  public async test(_action: IActionRdfMetadataAccumulate): Promise<IActorTest> {
+  public async test(action: IActionRdfMetadataAccumulate): Promise<IActorTest> {
     return true;
   }
 
@@ -28,10 +25,10 @@ export class ActorRdfMetadataAccumulateRequestTime extends ActorRdfMetadataAccum
     return {
       metadata: {
         ...('requestTime' in action.accumulatedMetadata) || ('requestTime' in action.appendingMetadata) ?
-            {
-              requestTime: (action.accumulatedMetadata.requestTime ?? 0) + (action.appendingMetadata.requestTime ?? 0),
-            } :
-            {},
+          {
+            requestTime: (action.accumulatedMetadata.requestTime || 0) + (action.appendingMetadata.requestTime || 0),
+          } :
+          {},
       },
     };
   }

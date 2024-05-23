@@ -1,6 +1,6 @@
 import { createFuncMediator } from '@comunica/actor-function-factory-wrapper-all/test/util';
 import { Bus } from '@comunica/core';
-import { getMockMediatorMergeBindingsContext, getMockMediatorQueryOperation } from '@comunica/jest';
+import { getMockMediatorQueryOperation } from '@comunica/jest';
 import {
   ActorTermComparatorFactoryExpressionEvaluator,
 } from '../lib';
@@ -21,12 +21,15 @@ describe('ActorTermComparatorFactoryExpressionEvaluator', () => {
         bus,
         mediatorFunctionFactory: createFuncMediator(),
         mediatorQueryOperation: getMockMediatorQueryOperation(),
-        mediatorMergeBindingsContext: getMockMediatorMergeBindingsContext(),
       });
     });
 
-    it.todo('should test');
+    it('should test', () => {
+      // Return expect(actor.test({ todo: true })).resolves.toEqual({ todo: true }); // TODO
+    });
 
-    it.todo('should run');
+    it('should run', () => {
+      // Return expect(actor.run({ todo: true })).resolves.toMatchObject({ todo: true }); // TODO
+    });
   });
 });

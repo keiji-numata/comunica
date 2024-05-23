@@ -1,8 +1,5 @@
-import type {
-  IActionRdfMetadataAccumulate,
-  IActorRdfMetadataAccumulateOutput,
-  IActorRdfMetadataAccumulateArgs,
-} from '@comunica/bus-rdf-metadata-accumulate';
+import type { IActionRdfMetadataAccumulate, IActorRdfMetadataAccumulateOutput,
+  IActorRdfMetadataAccumulateArgs } from '@comunica/bus-rdf-metadata-accumulate';
 import { ActorRdfMetadataAccumulate } from '@comunica/bus-rdf-metadata-accumulate';
 import type { IActorTest } from '@comunica/core';
 import type { QueryResultCardinality } from '@comunica/types';
@@ -15,7 +12,7 @@ export class ActorRdfMetadataAccumulateCardinality extends ActorRdfMetadataAccum
     super(args);
   }
 
-  public async test(_action: IActionRdfMetadataAccumulate): Promise<IActorTest> {
+  public async test(action: IActionRdfMetadataAccumulate): Promise<IActorTest> {
     return true;
   }
 
@@ -37,14 +34,15 @@ export class ActorRdfMetadataAccumulateCardinality extends ActorRdfMetadataAccum
           // use the cardinality of the subset.
           return { metadata: { cardinality: action.appendingMetadata.cardinality }};
         }
-        if (cardinality.dataset === action.appendingMetadata.cardinality.dataset) {
+        if (cardinality.dataset !== action.appendingMetadata.cardinality.dataset) {
+          // If the appending cardinality refers to another dataset,
+          // remove the dataset scopes.
+          delete cardinality.dataset;
+        } else {
           // If the appending cardinality is for the same dataset,
           // keep the accumulated cardinality unchanged.
           return { metadata: { cardinality }};
         }
-        // If the appending cardinality refers to another dataset,
-        // remove the dataset scopes.
-        delete cardinality.dataset;
       } else {
         // If the appending cardinality refers to a dataset subset,
         // keep the accumulated cardinality unchanged.

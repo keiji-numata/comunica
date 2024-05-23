@@ -1,6 +1,7 @@
 import type { MediatorHttp } from '@comunica/bus-http';
-import { validateAndCloseHttpResponse, ActorHttp } from '@comunica/bus-http';
+import { ActorHttp } from '@comunica/bus-http';
 import type { IQuadDestination } from '@comunica/bus-rdf-update-quads';
+import { validateHttpResponse } from '@comunica/bus-rdf-update-quads';
 import type { IActionContext } from '@comunica/types';
 import type * as RDF from '@rdfjs/types';
 import type { AsyncIterator } from 'asynciterator';
@@ -40,10 +41,10 @@ export class QuadDestinationPatchSparqlUpdate implements IQuadDestination {
     const dataWrapped = quads
       .map((quad: RDF.Quad) => {
         let stringQuad = `${termToString(quad.subject)} ${termToString(quad.predicate)} ${termToString(quad.object)} .`;
-        if (quad.graph.termType === 'DefaultGraph') {
-          stringQuad = `  ${stringQuad}\n`;
-        } else {
+        if (quad.graph.termType !== 'DefaultGraph') {
           stringQuad = `  GRAPH ${termToString(quad.graph)} { ${stringQuad} }\n`;
+        } else {
+          stringQuad = `  ${stringQuad}\n`;
         }
         return stringQuad;
       })
@@ -66,18 +67,18 @@ export class QuadDestinationPatchSparqlUpdate implements IQuadDestination {
       input: this.url,
     });
 
-    await validateAndCloseHttpResponse(this.url, httpResponse);
+    await validateHttpResponse(this.url, httpResponse);
   }
 
   public async deleteGraphs(
-    _graphs: RDF.DefaultGraph | 'NAMED' | 'ALL' | RDF.NamedNode[],
-    _requireExistence: boolean,
-    _dropGraphs: boolean,
+    graphs: RDF.DefaultGraph | 'NAMED' | 'ALL' | RDF.NamedNode[],
+    requireExistence: boolean,
+    dropGraphs: boolean,
   ): Promise<void> {
     throw new Error(`Patch-based SPARQL Update destinations don't support named graphs`);
   }
 
-  public async createGraphs(_graphs: RDF.NamedNode[], _requireNonExistence: boolean): Promise<void> {
+  public async createGraphs(graphs: RDF.NamedNode[], requireNonExistence: boolean): Promise<void> {
     throw new Error(`Patch-based SPARQL Update destinations don't support named graphs`);
   }
 }

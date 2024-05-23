@@ -27,22 +27,22 @@ describe('ActorQueryOperationDrop', () => {
       actor = new ActorQueryOperationDrop({ name: 'actor', bus, mediatorQueryOperation, mediatorUpdateQuads });
     });
 
-    it('should test on clear', async() => {
+    it('should test on clear', () => {
       const op: any = { operation: { type: 'drop' }, context: new ActionContext() };
-      await expect(actor.test(op)).resolves.toBeTruthy();
+      return expect(actor.test(op)).resolves.toBeTruthy();
     });
 
-    it('should not test on readOnly', async() => {
+    it('should not test on readOnly', () => {
       const op: any = {
         operation: { type: 'drop' },
         context: new ActionContext({ [KeysQueryOperation.readOnly.name]: true }),
       };
-      await expect(actor.test(op)).rejects.toThrow(`Attempted a write operation in read-only mode`);
+      return expect(actor.test(op)).rejects.toThrowError(`Attempted a write operation in read-only mode`);
     });
 
-    it('should not test on non-clear', async() => {
+    it('should not test on non-clear', () => {
       const op: any = { operation: { type: 'some-other-type' }, context: new ActionContext() };
-      await expect(actor.test(op)).rejects.toBeTruthy();
+      return expect(actor.test(op)).rejects.toBeTruthy();
     });
 
     it('should run for default graph', async() => {
@@ -54,7 +54,7 @@ describe('ActorQueryOperationDrop', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
       expect(mediatorUpdateQuads.mediate.mock.calls[0][0].deleteGraphs).toEqual({
         graphs: DF.defaultGraph(),
@@ -73,7 +73,7 @@ describe('ActorQueryOperationDrop', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
       expect(mediatorUpdateQuads.mediate.mock.calls[0][0].deleteGraphs).toEqual({
         graphs: DF.defaultGraph(),
@@ -91,7 +91,7 @@ describe('ActorQueryOperationDrop', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
       expect(mediatorUpdateQuads.mediate.mock.calls[0][0].deleteGraphs).toEqual({
         graphs: 'ALL',
@@ -109,7 +109,7 @@ describe('ActorQueryOperationDrop', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
       expect(mediatorUpdateQuads.mediate.mock.calls[0][0].deleteGraphs).toEqual({
         graphs: 'NAMED',
@@ -127,7 +127,7 @@ describe('ActorQueryOperationDrop', () => {
         context: new ActionContext(),
       };
       const output = <IQueryOperationResultVoid> await actor.run(op);
-      expect(output.type).toBe('void');
+      expect(output.type).toEqual('void');
       await expect(output.execute()).resolves.toBeUndefined();
       expect(mediatorUpdateQuads.mediate.mock.calls[0][0].deleteGraphs).toEqual({
         graphs: [ DF.namedNode('g1') ],

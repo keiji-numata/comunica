@@ -1,18 +1,19 @@
 {
   "name": "@comunica/config-query-sparql",
-  "version": "3.0.1",
+  "version": "2.7.0",
   "description": "default configuration files for Comunica SPARQL",
   "lsd:module": true,
-  "license": "MIT",
-  "homepage": "https://comunica.dev/",
+  "main": "lib/index.js",
+  "typings": "lib/index",
   "repository": {
     "type": "git",
     "url": "https://github.com/comunica/comunica.git",
     "directory": "engines/config-query-sparql"
   },
-  "bugs": {
-    "url": "https://github.com/comunica/comunica/issues"
+  "publishConfig": {
+    "access": "public"
   },
+  "sideEffects": false,
   "keywords": [
     "comunica",
     "sparql",
@@ -21,12 +22,11 @@
     "update",
     "config"
   ],
-  "sideEffects": false,
-  "main": "lib/index.js",
-  "typings": "lib/index",
-  "publishConfig": {
-    "access": "public"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/comunica/comunica/issues"
   },
+  "homepage": "https://comunica.dev/",
   "files": [
     "components",
     "config",
@@ -35,7 +35,7 @@
     "lib/**/*.js.map"
   ],
   "scripts": {
-    "build": "yarn run build:ts && yarn run build:components",
+    "build": "npm run build:ts && npm run build:components",
     "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",
     "build:components": "componentsjs-generator"
   }

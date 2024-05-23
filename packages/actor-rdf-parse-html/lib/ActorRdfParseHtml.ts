@@ -1,4 +1,6 @@
-import type { IActionRdfParse, IActorRdfParseFixedMediaTypesArgs, IActorRdfParseOutput } from '@comunica/bus-rdf-parse';
+import type { IActionRdfParse,
+  IActorRdfParseFixedMediaTypesArgs,
+  IActorRdfParseOutput } from '@comunica/bus-rdf-parse';
 import {
   ActorRdfParseFixedMediaTypes,
 } from '@comunica/bus-rdf-parse';
@@ -18,11 +20,8 @@ import { Readable } from 'readable-stream';
  * It creates an HTML parser, and delegates its events via the bus-rdf-parse-html bus to other HTML parsing actors.
  */
 export class ActorRdfParseHtml extends ActorRdfParseFixedMediaTypes {
-  private readonly busRdfParseHtml: Bus<Actor<
-    IActionRdfParseHtml,
-IActorTest,
-IActorRdfParseHtmlOutput
->, IActionRdfParseHtml, IActorTest, IActorRdfParseHtmlOutput>;
+  private readonly busRdfParseHtml: Bus<Actor<IActionRdfParseHtml, IActorTest,
+  IActorRdfParseHtmlOutput>, IActionRdfParseHtml, IActorTest, IActorRdfParseHtmlOutput>;
 
   /**
    * @param args -
@@ -42,7 +41,7 @@ IActorRdfParseHtmlOutput
   public async runHandle(action: IActionRdfParse, mediaType: string, context: IActionContext):
   Promise<IActorRdfParseOutput> {
     const data = new Readable({ objectMode: true });
-    data._read = () => {
+    data._read = async() => {
       // Only initialize once
       data._read = () => {
         // Do nothing
@@ -72,7 +71,7 @@ IActorRdfParseHtmlOutput
 
       // Register html parse listeners
       Promise.all(this.busRdfParseHtml.publish(htmlAction))
-        .then(async(outputs) => {
+        .then(async outputs => {
           endBarrier += outputs.length;
 
           const htmlParseListeners: IHtmlParseListener[] = [];
@@ -142,8 +141,9 @@ export interface IActorRdfParseHtmlArgs extends IActorRdfParseFixedMediaTypesArg
   /* eslint-disable max-len */
   /**
    * The RDF Parse HTML bus for fetching HTML listeners
-   * @default {<npmd:@comunica/bus-rdf-parse-html/^3.0.0/components/ActorRdfParseHtml.jsonld#ActorRdfParseHtml_default_bus>}
+   * @default {<npmd:@comunica/bus-rdf-parse-html/^2.0.0/components/ActorRdfParseHtml.jsonld#ActorRdfParseHtml_default_bus>}
    */
-  busRdfParseHtml: Bus<Actor<IActionRdfParseHtml, IActorTest, IActorRdfParseHtmlOutput>, IActionRdfParseHtml, IActorTest, IActorRdfParseHtmlOutput>;
+  busRdfParseHtml: Bus<Actor<IActionRdfParseHtml, IActorTest, IActorRdfParseHtmlOutput>,
+  IActionRdfParseHtml, IActorTest, IActorRdfParseHtmlOutput>;
   /* eslint-enable max-len */
 }

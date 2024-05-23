@@ -51,9 +51,6 @@ export interface IActorRdfMetadataExtractOutput extends IActorOutput {
 }
 
 export type IActorRdfMetadataExtractArgs = IActorArgs<
-IActionRdfMetadataExtract,
-IActorTest,
-IActorRdfMetadataExtractOutput
->;
+IActionRdfMetadataExtract, IActorTest, IActorRdfMetadataExtractOutput>;
 
 export type MediatorRdfMetadataExtract = Mediate<IActionRdfMetadataExtract, IActorRdfMetadataExtractOutput>;

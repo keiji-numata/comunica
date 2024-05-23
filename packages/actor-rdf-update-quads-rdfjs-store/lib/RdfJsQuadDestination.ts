@@ -34,8 +34,8 @@ export class RdfJsQuadDestination implements IQuadDestination {
 
   public async deleteGraphs(
     graphs: RDF.DefaultGraph | 'NAMED' | 'ALL' | RDF.NamedNode[],
-    _requireExistence: boolean,
-    _dropGraphs: boolean,
+    requireExistence: boolean,
+    dropGraphs: boolean,
   ): Promise<void> {
     switch (graphs) {
       case 'ALL':
